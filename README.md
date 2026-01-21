@@ -20,10 +20,10 @@
 
 | 서비스                   | 설명                      | 인스턴스 |
 |-----------------------|-------------------------|------|
+| **admin-service**     | 공연/좌석 관리 (운영용)          | 1    |
+| **payment-service**   | 결제 처리 (PG 연동은 모킹)       | 1    |
 | **queue-service**     | 대기열 관리, 순번 계산, 입장 토큰 발급 | 2    |
 | **ticketing-service** | 좌석 조회, 좌석 홀드, 주문 처리     | 2    |
-| **payment-service**   | 결제 처리 (PG 연동은 모킹)       | 1    |
-| **admin-service**     | 공연/좌석 관리 (운영용)          | 1    |
 
 - 모든 서비스는 독립 실행·독립 배포 가능
 - 하나의 레포(monorepo)에서 서비스별 CI/CD 구성
@@ -76,8 +76,8 @@ AVAILABLE → HELD (TTL) → SOLD
 
 **Backend**
 
-- Java 17
-- Spring Boot 3.x
+- Java 17.0.x
+- Spring Boot 3.5.x
 - Spring Web, Spring Data JPA
 - Redis
 - Kafka
@@ -106,9 +106,10 @@ AVAILABLE → HELD (TTL) → SOLD
 ```
 high-traffic-ticketing/
   services/
+    admin-service/
+    payment-service/
     queue-service/
     ticketing-service/
-    payment-service/
   infra/
     docker-compose/
   loadtest/
