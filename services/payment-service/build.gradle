@@ -1,0 +1,14 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+description = 'Payment service for payment processing'
+
+dependencies {
+    implementation project(':common:common-web')
+    implementation project(':common:common-security')
+    implementation project(':common:common-messaging')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+}

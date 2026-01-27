@@ -1,0 +1,12 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+description = 'Queue service for waiting queue and admission control'
+
+dependencies {
+    implementation project(':common:common-web')
+    implementation project(':common:common-messaging')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+}

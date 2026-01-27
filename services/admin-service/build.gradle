@@ -1,0 +1,15 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+description = 'Admin service for managing performances and seats'
+
+dependencies {
+    implementation project(':common:common-web')
+    implementation project(':common:common-security')
+    implementation project(':common:common-messaging')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+}

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ticketing-service
+  profiles:
+    active: local

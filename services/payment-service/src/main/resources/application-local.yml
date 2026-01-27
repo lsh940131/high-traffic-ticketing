@@ -1,0 +1,27 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5433/payment
+    username: payment
+    password: payment_pw
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: payment-service
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+
+jwt:
+  secret: local-payment-secret-key-must-be-at-least-256-bits-long
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
