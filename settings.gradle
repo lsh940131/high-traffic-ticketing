@@ -1,0 +1,14 @@
+rootProject.name = "high-traffic-ticketing"
+
+include(
+    // common modules
+    "common:common-web",
+    "common:common-security",
+    "common:common-messaging",
+
+    // service modules
+    "services:admin-service",
+    "services:payment-service",
+    "services:queue-service",
+    "services:ticketing-service"
+)
