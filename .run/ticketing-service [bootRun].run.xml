@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="high-traffic-ticketing [:services:admin-service:bootRun]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="ticketing-service [:services:ticketing-service:bootRun]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":services:admin-service:bootRun" />
+          <option value=":services:ticketing-service:bootRun" />
         </list>
       </option>
       <option name="vmOptions" />
