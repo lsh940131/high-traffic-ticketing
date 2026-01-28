@@ -25,3 +25,29 @@ jwt:
   secret: local-payment-secret-key-must-be-at-least-256-bits-long
   access-token-expiration: 3600000
   refresh-token-expiration: 604800000
+
+springdoc:
+  info:
+    title: Payment Service API
+    description: |
+      ## 결제 서비스 API
+
+      결제 처리를 담당합니다. (PG 모킹)
+
+      ### 주요 기능
+      - 결제 요청 처리 (Kafka 이벤트 수신)
+      - 결제 상태 조회
+      - 결제 결과 발행 (PaymentResultEvent)
+
+      ### 이벤트 흐름
+      1. ticketing-service → PaymentRequestedEvent 수신
+      2. PG 결제 처리 (모킹)
+      3. PaymentResultEvent 발행 → ticketing-service
+    version: v1.0.0
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
