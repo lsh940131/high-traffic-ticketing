@@ -19,7 +19,7 @@ logging:
 
 management:
   server:
-    port: 9084
+    port: 9080
   endpoints:
     web:
       exposure:

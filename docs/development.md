@@ -10,22 +10,22 @@ cd infra/docker-compose && docker compose up -d
 ./gradlew build -x test
 
 # 서비스 실행
-./gradlew :services:auth-service:bootRun       # 8084
-./gradlew :services:admin-service:bootRun      # 8080
+./gradlew :services:auth-service:bootRun       # 8080
 ./gradlew :services:queue-service:bootRun      # 8081
 ./gradlew :services:ticketing-service:bootRun  # 8082
 ./gradlew :services:payment-service:bootRun    # 8083
+./gradlew :services:admin-service:bootRun      # 8084
 ```
 
 ## 포트 구성
 
 | 서비스 | API 포트 | Actuator 포트 |
 |--------|----------|---------------|
-| auth-service | 8084 | 9084 |
-| admin-service | 8080 | 9080 |
+| auth-service | 8080 | 9080 |
 | queue-service | 8081 | 9081 |
 | ticketing-service | 8082 | 9082 |
 | payment-service | 8083 | 9083 |
+| admin-service | 8084 | 9084 |
 
 ## Health Check
 
@@ -43,10 +43,10 @@ curl http://localhost:9081/actuator/health/readiness
 
 - [ ] 각 서비스에 SecurityConfig 작성 (또는 개발 중 비활성화)
 - [ ] auth-service: 로그인/토큰 발급/토큰 갱신 API
-- [ ] admin-service: 공연/좌석 CRUD API
 - [ ] queue-service: 대기열 진입/순번 조회/SSE 알림
 - [ ] ticketing-service: 좌석 조회/홀드/주문 처리
 - [ ] payment-service: 결제 처리 (PG 모킹)
+- [ ] admin-service: 공연/좌석 CRUD API
 - [ ] k6 부하 테스트 시나리오 작성
 
 ### K8s 운영 시
