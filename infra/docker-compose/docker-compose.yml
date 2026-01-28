@@ -82,6 +82,28 @@ services:
       retries: 20
 
   # =========================
+  # PostgreSQL - Auth
+  # =========================
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+      POSTGRES_USER: ${POSTGRES_AUTH_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+    ports:
+      - "${POSTGRES_AUTH_PORT}:5432"
+    volumes:
+      - pg_auth_data:/var/lib/postgresql/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_AUTH_USER} -d ${POSTGRES_AUTH_DB} -h 127.0.0.1 -p 5432" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
   # PostgreSQL - Admin (Read Model)
   # =========================
   postgres-admin:
@@ -177,4 +199,5 @@ volumes:
   redis_seat_data:
   pg_ticketing_data:
   pg_payment_data:
+  pg_auth_data:
   pg_admin_data:

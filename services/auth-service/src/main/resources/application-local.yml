@@ -1,0 +1,19 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5435/auth
+    username: auth
+    password: auth_pw
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+jwt:
+  secret: local-auth-secret-key-must-be-at-least-256-bits-long-for-security
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000

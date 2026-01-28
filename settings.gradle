@@ -8,6 +8,7 @@ include(
 
     // service modules
     "services:admin-service",
+    "services:auth-service",
     "services:payment-service",
     "services:queue-service",
     "services:ticketing-service"

@@ -20,15 +20,23 @@
 
 | 서비스                   | 설명                      | 인스턴스 |
 |-----------------------|-------------------------|------|
+| **auth-service**      | 로그인, 토큰 발급/갱신           | 1    |
 | **admin-service**     | 공연/좌석 관리 (운영용)          | 1    |
-| **payment-service**   | 결제 처리 (PG 연동은 모킹)       | 1    |
 | **queue-service**     | 대기열 관리, 순번 계산, 입장 토큰 발급 | 2    |
 | **ticketing-service** | 좌석 조회, 좌석 홀드, 주문 처리     | 2    |
+| **payment-service**   | 결제 처리 (PG 연동은 모킹)       | 1    |
 
 - 모든 서비스는 독립 실행·독립 배포 가능
 - 하나의 레포(monorepo)에서 서비스별 CI/CD 구성
 
 ## 🚦 핵심 설계 포인트
+
+**사용자 플로우**
+
+```
+1. 로그인 (auth) → 2. 대기열 진입 (queue) → 3. 좌석 선택/결제 (ticketing/payment) → 4. 완료
+     평상시              트래픽 폭주                  TPS 제어됨
+```
 
 1. Queue 기반 입장 제어
 
@@ -64,12 +72,14 @@ AVAILABLE → HELD (TTL) → SOLD
 
 | 용도       | 기술                   |
 |----------|----------------------|
+| 인증/사용자   | PostgreSQL           |
 | Queue 상태 | Redis (Queue 전용)     |
 | 좌석 홀드/확정 | Redis (Seat/Hold 전용) |
 | 티켓팅 데이터  | PostgreSQL           |
 | 결제 데이터   | PostgreSQL           |
 | 이벤트 스트림  | Kafka                |
 
+- 서비스별 DB 분리 (auth, ticketing, payment, admin)
 - Queue 트래픽 폭주가 좌석 정합성 처리에 영향을 주지 않도록 Redis를 분리 설계
 
 ## 🛠️ 기술 스택
@@ -106,10 +116,15 @@ AVAILABLE → HELD (TTL) → SOLD
 ```
 high-traffic-ticketing/
   services/
+    auth-service/
     admin-service/
-    payment-service/
     queue-service/
     ticketing-service/
+    payment-service/
+  common/
+    common-web/
+    common-security/
+    common-messaging/
   infra/
     docker-compose/
   loadtest/
@@ -121,6 +136,6 @@ high-traffic-ticketing/
 
 - 단순 CRUD가 아닌 트래픽 제어 중심의 시스템 설계
 - 수평 확장 환경에서의 동시성 문제 해결
-- Queue → Admission → Seat Hold → Payment → Event 흐름의 이해
+- Auth → Queue → Admission → Seat Hold → Payment → Event 흐름의 이해
 - 실무에서 발생하는 병목을 구조적으로 해결하는 사고 방식
 
