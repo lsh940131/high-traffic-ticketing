@@ -10,6 +10,8 @@ logging:
     root: INFO
 
 management:
+  server:
+    port: 9081
   endpoints:
     web:
       exposure:
