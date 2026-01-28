@@ -130,10 +130,3 @@ high-traffic-ticketing/
 - 서비스별 Auto Scaling / HPA 적용
 - Prometheus / Grafana 기반 모니터링
 
-## 🌿 작업 브랜치 규칙
-
-- chore/ : 구조/설정/환경
-- feat/ : 기능
-- infra/ : docker, kafka, redis, 배포
-- test/ : 부하테스트, 시뮬레이션
-- docs/ : 문서chore/ : 구조/설정/환경
