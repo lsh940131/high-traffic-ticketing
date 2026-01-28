@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5435/auth
+    username: auth
+    password: auth_pw
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+jwt:
+  secret: local-auth-secret-key-must-be-at-least-256-bits-long-for-security
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
+
+springdoc:
+  info:
+    title: Auth Service API
+    description: |
+      ## 인증 서비스 API
+
+      사용자 로그인 및 JWT 토큰 발급/갱신을 담당합니다.
+
+      ### 주요 기능
+      - 회원가입
+      - 로그인 (access token, refresh token 발급)
+      - 토큰 갱신
+      - 로그아웃
+    version: v1.0.0
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

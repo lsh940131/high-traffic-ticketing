@@ -1,0 +1,43 @@
+server:
+  port: 8081
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: queue-service
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+
+springdoc:
+  info:
+    title: Queue Service API
+    description: |
+      ## 대기열 서비스 API
+
+      티켓팅 대기열 관리 및 입장 토큰 발급을 담당합니다.
+
+      ### 주요 기능
+      - 대기열 진입 (대기 순번 발급)
+      - 대기 상태 조회 (SSE)
+      - 입장 토큰 발급 (Credit-based Backpressure)
+
+      ### 흐름
+      1. 사용자 대기열 진입 → 대기 순번 반환
+      2. SSE로 대기 상태 실시간 수신
+      3. ticketing-service credit 기반 입장 허용
+      4. 입장 토큰 발급 → ticketing-service 접근 가능
+    version: v1.0.0
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

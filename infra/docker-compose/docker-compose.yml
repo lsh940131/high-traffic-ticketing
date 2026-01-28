@@ -1,0 +1,203 @@
+services:
+  # =========================
+  # Redis - Queue
+  # =========================
+  redis-queue:
+    image: redis:7.4
+    container_name: redis-queue
+    ports:
+      - "${REDIS_QUEUE_PORT}:6379"
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_queue_data:/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
+  # Redis - Seat Lock
+  # =========================
+  redis-seat:
+    image: redis:7.4
+    container_name: redis-seat
+    ports:
+      - "${REDIS_SEAT_PORT}:6379"
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_seat_data:/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
+  # PostgreSQL - Ticketing
+  # =========================
+  postgres-ticketing:
+    image: postgres:16
+    container_name: postgres-ticketing
+    environment:
+      POSTGRES_DB: ${POSTGRES_TICKETING_DB}
+      POSTGRES_USER: ${POSTGRES_TICKETING_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_TICKETING_PASSWORD}
+    ports:
+      - "${POSTGRES_TICKETING_PORT}:5432"
+    volumes:
+      - pg_ticketing_data:/var/lib/postgresql/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_TICKETING_USER} -d ${POSTGRES_TICKETING_DB} -h 127.0.0.1 -p 5432" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
+  # PostgreSQL - Payment
+  # =========================
+  postgres-payment:
+    image: postgres:16
+    container_name: postgres-payment
+    environment:
+      POSTGRES_DB: ${POSTGRES_PAYMENT_DB}
+      POSTGRES_USER: ${POSTGRES_PAYMENT_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PAYMENT_PASSWORD}
+    ports:
+      - "${POSTGRES_PAYMENT_PORT}:5432"
+    volumes:
+      - pg_payment_data:/var/lib/postgresql/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_PAYMENT_USER} -d ${POSTGRES_PAYMENT_DB} -h 127.0.0.1 -p 5432" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
+  # PostgreSQL - Auth
+  # =========================
+  postgres-auth:
+    image: postgres:16
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+      POSTGRES_USER: ${POSTGRES_AUTH_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+    ports:
+      - "${POSTGRES_AUTH_PORT}:5432"
+    volumes:
+      - pg_auth_data:/var/lib/postgresql/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_AUTH_USER} -d ${POSTGRES_AUTH_DB} -h 127.0.0.1 -p 5432" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
+  # PostgreSQL - Admin (Read Model)
+  # =========================
+  postgres-admin:
+    image: postgres:16
+    container_name: postgres-admin
+    environment:
+      POSTGRES_DB: ${POSTGRES_ADMIN_DB}
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+    ports:
+      - "${POSTGRES_ADMIN_PORT}:5432"
+    volumes:
+      - pg_admin_data:/var/lib/postgresql/data
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER} -d ${POSTGRES_ADMIN_DB} -h 127.0.0.1 -p 5432" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # =========================
+  # Zookeeper
+  # =========================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok,stat,srvr"
+    ports:
+      - "${ZOOKEEPER_PORT}:2181"
+    networks:
+      - htt-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "bash -lc 'exec 3<>/dev/tcp/127.0.0.1/2181 && echo ruok >&3 && head -n 1 <&3 | grep imok'"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+
+  # =========================
+  # Kafka
+  # =========================
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "${KAFKA_EXTERNAL_PORT}:9092"
+      - "${KAFKA_INTERNAL_PORT}:29092"
+    environment:
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_LISTENERS: >
+        PLAINTEXT://0.0.0.0:${KAFKA_INTERNAL_PORT},
+        PLAINTEXT_HOST://0.0.0.0:9092
+
+      KAFKA_ADVERTISED_LISTENERS: >
+        PLAINTEXT://kafka:${KAFKA_INTERNAL_PORT},
+        PLAINTEXT_HOST://localhost:${KAFKA_EXTERNAL_PORT}
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - htt-net
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server 127.0.0.1:${KAFKA_INTERNAL_PORT} >/dev/null 2>&1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+networks:
+  htt-net:
+    driver: bridge
+
+volumes:
+  redis_queue_data:
+  redis_seat_data:
+  pg_ticketing_data:
+  pg_payment_data:
+  pg_auth_data:
+  pg_admin_data:

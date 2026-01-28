@@ -1,0 +1,15 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+description = 'Ticketing service for seat hold and order'
+
+dependencies {
+    implementation project(':common:common-web')
+    implementation project(':common:common-security')
+    implementation project(':common:common-messaging')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    runtimeOnly 'org.postgresql:postgresql'
+}

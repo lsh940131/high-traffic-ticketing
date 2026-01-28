@@ -1,0 +1,13 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+description = 'Auth service for user authentication and token management'
+
+dependencies {
+    implementation project(':common:common-web')
+    implementation project(':common:common-security')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+}

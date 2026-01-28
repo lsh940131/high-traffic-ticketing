@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: queue-service
+
+  profiles:
+    default: local
+
+logging:
+  level:
+    root: INFO
+
+management:
+  server:
+    port: 9081
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true

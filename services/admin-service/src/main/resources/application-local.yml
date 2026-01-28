@@ -1,0 +1,47 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5434/admin_read
+    username: admin
+    password: admin_pw
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: admin-service
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+
+springdoc:
+  info:
+    title: Admin Service API
+    description: |
+      ## 관리자 서비스 API
+
+      공연 및 좌석 관리를 위한 운영용 서비스입니다.
+
+      ### 주요 기능
+      - 공연 등록/수정/삭제
+      - 좌석 배치 관리
+      - 예약 현황 조회 (Read Model)
+
+      ### 인증
+      - ADMIN 권한 필요
+      - `Authorization: Bearer {token}` 헤더 필수
+    version: v1.0.0
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

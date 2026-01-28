@@ -1,0 +1,50 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticketing
+    username: ticketing
+    password: ticketing_pw
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+jwt:
+  secret: local-ticketing-secret-key-must-be-at-least-256-bits-long
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
+
+springdoc:
+  info:
+    title: Ticketing Service API
+    description: |
+      ## 티켓팅 서비스 API
+
+      좌석 조회, 홀드, 주문 처리를 담당하는 핵심 서비스입니다.
+
+      ### 주요 기능
+      - 좌석 조회 (공연별 좌석 현황)
+      - 좌석 홀드 (임시 선점, TTL 적용)
+      - 주문 생성 (결제 요청)
+
+      ### 인증
+      - queue-service에서 발급받은 입장 토큰 필요
+      - `Authorization: Bearer {token}` 헤더 필수
+    version: v1.0.0
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
