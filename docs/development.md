@@ -10,6 +10,7 @@ cd infra/docker-compose && docker compose up -d
 ./gradlew build -x test
 
 # 서비스 실행
+./gradlew :services:auth-service:bootRun       # 8084
 ./gradlew :services:admin-service:bootRun      # 8080
 ./gradlew :services:queue-service:bootRun      # 8081
 ./gradlew :services:ticketing-service:bootRun  # 8082
@@ -20,6 +21,7 @@ cd infra/docker-compose && docker compose up -d
 
 | 서비스 | API 포트 | Actuator 포트 |
 |--------|----------|---------------|
+| auth-service | 8084 | 9084 |
 | admin-service | 8080 | 9080 |
 | queue-service | 8081 | 9081 |
 | ticketing-service | 8082 | 9082 |
@@ -40,6 +42,7 @@ curl http://localhost:9081/actuator/health/readiness
 ### 기능 개발
 
 - [ ] 각 서비스에 SecurityConfig 작성 (또는 개발 중 비활성화)
+- [ ] auth-service: 로그인/토큰 발급/토큰 갱신 API
 - [ ] admin-service: 공연/좌석 CRUD API
 - [ ] queue-service: 대기열 진입/순번 조회/SSE 알림
 - [ ] ticketing-service: 좌석 조회/홀드/주문 처리
@@ -48,8 +51,8 @@ curl http://localhost:9081/actuator/health/readiness
 
 ### K8s 운영 시
 
-- [ ] Actuator 포트(9080-9083)는 **ClusterIP**로만 노출 (외부 접근 차단)
-- [ ] API 포트(8080-8083)만 Ingress/LoadBalancer로 외부 노출
+- [ ] Actuator 포트(9080-9084)는 **ClusterIP**로만 노출 (외부 접근 차단)
+- [ ] API 포트(8080-8084)만 Ingress/LoadBalancer로 외부 노출
 - [ ] Prometheus가 내부망에서 `/actuator/prometheus` 스크래핑하도록 설정
 - [ ] micrometer-prometheus 의존성 추가 (현재 미포함)
 
