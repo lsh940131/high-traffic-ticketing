@@ -124,9 +124,3 @@ high-traffic-ticketing/
 - Queue → Admission → Seat Hold → Payment → Event 흐름의 이해
 - 실무에서 발생하는 병목을 구조적으로 해결하는 사고 방식
 
-## 🔮 향후 확장 계획
-
-- AWS 배포(ECS → EKS)
-- 서비스별 Auto Scaling / HPA 적용
-- Prometheus / Grafana 기반 모니터링
-
