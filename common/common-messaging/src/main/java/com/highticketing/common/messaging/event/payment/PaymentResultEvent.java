@@ -9,16 +9,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentResultEvent extends BaseEvent {
 
-    private Long reservationId;
-    private PaymentStatus status;
-    private String reason;
+  private Long reservationId;
+  private PaymentStatus status;
+  private String reason;
 
-    @Builder
-    public PaymentResultEvent(Long reservationId, PaymentStatus status, String reason,
-                               String producer, String traceId) {
-        this.reservationId = reservationId;
-        this.status = status;
-        this.reason = reason;
-        initializeBase("PAYMENT_RESULT", producer, traceId);
-    }
+  @Builder
+  public PaymentResultEvent(
+      Long reservationId, PaymentStatus status, String reason, String producer, String traceId) {
+    this.reservationId = reservationId;
+    this.status = status;
+    this.reason = reason;
+    initializeBase("PAYMENT_RESULT", producer, traceId);
+  }
 }

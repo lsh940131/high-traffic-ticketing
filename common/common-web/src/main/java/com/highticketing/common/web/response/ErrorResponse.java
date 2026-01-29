@@ -8,10 +8,10 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ErrorResponse {
 
-    private final String code;
-    private final String msg;
+  private final String code;
+  private final String msg;
 
-    public static ErrorResponse of(String code, String msg) {
-        return new ErrorResponse(code, msg);
-    }
+  public static ErrorResponse of(String code, String msg) {
+    return new ErrorResponse(code, msg);
+  }
 }

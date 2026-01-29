@@ -9,21 +9,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReservationCompletedEvent extends BaseEvent {
 
-    private Long reservationId;
-    private Long userId;
-    private Long seatId;
-    private ReservationStatus status;
-    private String reason;
+  private Long reservationId;
+  private Long userId;
+  private Long seatId;
+  private ReservationStatus status;
+  private String reason;
 
-    @Builder
-    public ReservationCompletedEvent(Long reservationId, Long userId, Long seatId,
-                                      ReservationStatus status, String reason,
-                                      String producer, String traceId) {
-        this.reservationId = reservationId;
-        this.userId = userId;
-        this.seatId = seatId;
-        this.status = status;
-        this.reason = reason;
-        initializeBase("RESERVATION_COMPLETED", producer, traceId);
-    }
+  @Builder
+  public ReservationCompletedEvent(
+      Long reservationId,
+      Long userId,
+      Long seatId,
+      ReservationStatus status,
+      String reason,
+      String producer,
+      String traceId) {
+    this.reservationId = reservationId;
+    this.userId = userId;
+    this.seatId = seatId;
+    this.status = status;
+    this.reason = reason;
+    initializeBase("RESERVATION_COMPLETED", producer, traceId);
+  }
 }
