@@ -1,5 +1,30 @@
 # Development Guide
 
+## IntelliJ IDEA 설정
+
+### 자동 적용 (git 공유)
+
+프로젝트를 IntelliJ로 열면 아래 설정이 자동 적용됩니다.
+
+- **Build project automatically** 활성화 (`compiler.xml`)
+- **Run Configurations** - 5개 서비스 실행 설정 (profile: `local`)
+
+### 수동 설정 필요
+
+아래 설정은 IDE 전역 설정이라 각자 설정해야 합니다.
+
+`Settings > Advanced Settings > Compiler` 에서 아래 항목을 체크:
+
+> **Allow auto-make to start even if developed application is currently running**
+
+이 설정이 없으면 앱 실행 중 코드를 수정해도 자동 빌드가 동작하지 않습니다.
+
+### DevTools 동작 흐름
+
+```
+코드 수정 → IntelliJ 자동 빌드 → .class 변경 → DevTools 감지 → 앱 자동 재시작 (1~3초)
+```
+
 ## 로컬 실행
 
 ```bash
@@ -19,13 +44,13 @@ cd infra/docker-compose && docker compose up -d
 
 ## 포트 구성
 
-| 서비스 | API 포트 | Actuator 포트 |
-|--------|----------|---------------|
-| auth-service | 8080 | 9080 |
-| queue-service | 8081 | 9081 |
-| ticketing-service | 8082 | 9082 |
-| payment-service | 8083 | 9083 |
-| admin-service | 8084 | 9084 |
+| 서비스               | API 포트 | Actuator 포트 |
+|-------------------|--------|-------------|
+| auth-service      | 8080   | 9080        |
+| queue-service     | 8081   | 9081        |
+| ticketing-service | 8082   | 9082        |
+| payment-service   | 8083   | 9083        |
+| admin-service     | 8084   | 9084        |
 
 ## Health Check
 
@@ -61,28 +86,28 @@ curl http://localhost:9081/actuator/health/readiness
 apiVersion: v1
 kind: Service
 metadata:
-  name: queue-service-internal
+    name: queue-service-internal
 spec:
-  type: ClusterIP
-  ports:
-    - name: actuator
-      port: 9081
-      targetPort: 9081
+    type: ClusterIP
+    ports:
+        -   name: actuator
+            port: 9081
+            targetPort: 9081
 ---
 # K8s Deployment - liveness/readiness probe
 livenessProbe:
-  httpGet:
-    path: /actuator/health/liveness
-    port: 9081
-  initialDelaySeconds: 30
-  periodSeconds: 10
+    httpGet:
+        path: /actuator/health/liveness
+        port: 9081
+    initialDelaySeconds: 30
+    periodSeconds: 10
 
 readinessProbe:
-  httpGet:
-    path: /actuator/health/readiness
-    port: 9081
-  initialDelaySeconds: 10
-  periodSeconds: 5
+    httpGet:
+        path: /actuator/health/readiness
+        port: 9081
+    initialDelaySeconds: 10
+    periodSeconds: 5
 ```
 
 ---
