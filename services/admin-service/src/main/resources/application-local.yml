@@ -10,11 +10,6 @@ spring:
     username: admin
     password: admin_pw
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-
   kafka:
     bootstrap-servers: localhost:9092
     consumer:

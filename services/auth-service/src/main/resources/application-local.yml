@@ -10,11 +10,6 @@ spring:
     username: auth
     password: auth_pw
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-
 jwt:
   secret: local-auth-secret-key-must-be-at-least-256-bits-long-for-security
   access-token-expiration: 3600000
