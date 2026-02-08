@@ -11,12 +11,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class UserPrincipal implements UserDetails {
 
   private final Long userId;
-  private final String username;
+  private final String email;
   private final Role role;
 
-  public UserPrincipal(Long userId, String username, Role role) {
+  public UserPrincipal(Long userId, String email, Role role) {
     this.userId = userId;
-    this.username = username;
+    this.email = email;
     this.role = role;
   }
 
@@ -32,7 +32,7 @@ public class UserPrincipal implements UserDetails {
 
   @Override
   public String getUsername() {
-    return username;
+    return email;
   }
 
   @Override

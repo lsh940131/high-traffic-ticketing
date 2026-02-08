@@ -18,14 +18,14 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true, length = 50)
-  private String userId;
+  @Column(nullable = false, unique = true, length = 300)
+  private String email;
 
-  @Column(nullable = false)
+  @Column(name = "pwd", nullable = false)
   private String password;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20)
+  @Column(nullable = false, length = 50)
   private Role role;
 
   @Column(nullable = false, updatable = false)
@@ -33,9 +33,11 @@ public class User {
 
   private Instant updatedAt;
 
+  private Instant deletedAt;
+
   @Builder
-  public User(String userId, String password, String email, Role role) {
-    this.userId = userId;
+  public User(String email, String password, Role role) {
+    this.email = email;
     this.password = password;
     this.role = role;
   }

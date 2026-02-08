@@ -1,6 +1,6 @@
 package com.highticketing.auth.domain.user.service;
 
-import com.highticketing.auth.domain.user.dto.response.CheckUserIdResponse;
+import com.highticketing.auth.domain.user.dto.response.CheckEmailResponse;
 import com.highticketing.auth.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,8 +13,8 @@ public class UserService {
 
   private final UserRepository userRepository;
 
-  public CheckUserIdResponse checkUserIdAvailability(String userId) {
-    boolean exists = userRepository.existsByUserId(userId);
-    return exists ? CheckUserIdResponse.unavailable() : CheckUserIdResponse.available();
+  public CheckEmailResponse checkEmailAvailability(String email) {
+    boolean exists = userRepository.existsByEmail(email);
+    return exists ? CheckEmailResponse.unavailable() : CheckEmailResponse.available();
   }
 }

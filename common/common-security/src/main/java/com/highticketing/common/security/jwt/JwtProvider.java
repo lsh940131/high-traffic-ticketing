@@ -18,21 +18,21 @@ public class JwtProvider {
 
   private final JwtProperties jwtProperties;
 
-  public String createAccessToken(Long userId, String username, Role role) {
-    return createToken(userId, username, role, jwtProperties.getAccessTokenExpiration());
+  public String createAccessToken(Long userId, String email, Role role) {
+    return createToken(userId, email, role, jwtProperties.getAccessTokenExpiration());
   }
 
-  public String createRefreshToken(Long userId, String username, Role role) {
-    return createToken(userId, username, role, jwtProperties.getRefreshTokenExpiration());
+  public String createRefreshToken(Long userId, String email, Role role) {
+    return createToken(userId, email, role, jwtProperties.getRefreshTokenExpiration());
   }
 
-  private String createToken(Long userId, String username, Role role, long expiration) {
+  private String createToken(Long userId, String email, Role role, long expiration) {
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + expiration);
 
     return Jwts.builder()
         .subject(String.valueOf(userId))
-        .claim("username", username)
+        .claim("email", email)
         .claim("role", role.name())
         .issuedAt(now)
         .expiration(expiryDate)
@@ -45,10 +45,10 @@ public class JwtProvider {
         Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
 
     Long userId = Long.valueOf(claims.getSubject());
-    String username = claims.get("username", String.class);
+    String email = claims.get("email", String.class);
     Role role = Role.valueOf(claims.get("role", String.class));
 
-    return new UserPrincipal(userId, username, role);
+    return new UserPrincipal(userId, email, role);
   }
 
   public boolean validateToken(String token) {
