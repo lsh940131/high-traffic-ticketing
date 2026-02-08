@@ -13,14 +13,11 @@ public class CheckUserIdResponse {
   @Schema(description = "사용 가능 여부", example = "true")
   private final boolean available;
 
-  @Schema(description = "메시지", example = "사용 가능한 아이디입니다")
-  private final String message;
-
   public static CheckUserIdResponse available() {
-    return new CheckUserIdResponse(true, "사용 가능한 아이디입니다");
+    return new CheckUserIdResponse(true);
   }
 
   public static CheckUserIdResponse unavailable() {
-    return new CheckUserIdResponse(false, "이미 사용 중인 아이디입니다");
+    return new CheckUserIdResponse(false);
   }
 }
