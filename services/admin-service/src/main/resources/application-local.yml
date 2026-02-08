@@ -2,6 +2,8 @@ server:
   port: 8084
 
 spring:
+  config:
+    import: classpath:common-local.yml
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5434/admin_read

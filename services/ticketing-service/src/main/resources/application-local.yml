@@ -2,6 +2,8 @@ server:
   port: 8082
 
 spring:
+  config:
+    import: classpath:common-local.yml
   datasource:
     url: jdbc:postgresql://localhost:5432/ticketing
     username: ticketing

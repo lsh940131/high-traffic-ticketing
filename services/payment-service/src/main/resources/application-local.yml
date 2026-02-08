@@ -2,6 +2,8 @@ server:
   port: 8083
 
 spring:
+  config:
+    import: classpath:common-local.yml
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5433/payment

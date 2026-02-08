@@ -2,6 +2,8 @@ server:
   port: 8081
 
 spring:
+  config:
+    import: classpath:common-local.yml
   data:
     redis:
       host: localhost
