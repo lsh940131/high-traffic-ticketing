@@ -1,0 +1,34 @@
+// 진실의 원천(source of truth). Redis는 빠른 게이트, DB가 최종 정합성 보장.
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model Event {
+  id        String   @id @default(cuid())
+  title     String
+  openAt    DateTime
+  seats     Seat[]
+  createdAt DateTime @default(now())
+}
+
+model Seat {
+  id      String   @id @default(cuid())
+  event   Event    @relation(fields: [eventId], references: [id])
+  eventId String
+  grade   String
+  price   Int
+  // 오버셀 2차 방어선: (eventId, label) 유니크
+  label   String
+  order   Order?
+  @@unique([eventId, label])
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  orderNo       String   @unique
+  seat          Seat     @relation(fields: [seatId], references: [id])
+  seatId        String   @unique   // 좌석당 주문 1건 → DB 레벨 오버셀 차단
+  userId        String
+  state         String   // CONFIRMED | FAILED
+  paymentTxId   String?
+  createdAt     DateTime @default(now())
+}
