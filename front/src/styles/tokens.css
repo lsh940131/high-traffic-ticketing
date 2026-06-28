@@ -1,0 +1,19 @@
+/* figma/DESIGN-TOKENS.md 와 동기화 */
+:root {
+  --color-bg: #0B0E14;
+  --color-surface: #161B26;
+  --color-primary: #4F8CFF;
+  --color-success: #2ECC71;
+  --color-warning: #F5A623;
+  --color-danger: #FF4D4F;
+  --color-text: #E6E9EF;
+  --color-text-muted: #8A93A6;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-6: 24px; --space-8: 32px;
+  --radius: 8px; --radius-card: 16px;
+}
+body { background: var(--color-bg); color: var(--color-text);
+  font-family: Pretendard, Inter, system-ui, sans-serif; margin: 0; padding: var(--space-8); }
+.queue-progress .bar { height: 10px; background: var(--color-surface);
+  border-radius: var(--radius); overflow: hidden; margin-top: var(--space-3); }
+.queue-progress .fill { height: 100%; background: var(--color-primary); transition: width .4s; }
