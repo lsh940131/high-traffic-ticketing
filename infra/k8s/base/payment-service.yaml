@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: payment-service, namespace: ticketing }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: payment-service } }
+  template:
+    metadata: { labels: { app: payment-service } }
+    spec:
+      containers:
+        - name: payment-service
+          image: ticketing-payment-service:latest
+          ports: [{ containerPort: 3103 }]
+          envFrom:
+            - configMapRef: { name: back-config }
+            - secretRef: { name: back-secret }
+          resources:
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits: { cpu: "1", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: payment-service, namespace: ticketing }
+spec:
+  selector: { app: payment-service }
+  ports: [{ port: 3103, targetPort: 3103 }]

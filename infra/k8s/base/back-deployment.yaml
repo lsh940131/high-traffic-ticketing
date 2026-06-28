@@ -1,0 +1,2 @@
+# DEPRECATED: MSA 전환으로 gateway/queue-service/reservation-service/payment-service 로 분리됨.
+# 이 파일은 kustomization에서 제외되어 적용되지 않음. (삭제 권장: git rm)

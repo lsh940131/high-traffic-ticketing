@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: gateway }
+spec: { replicas: 3 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: queue-service }
+spec: { replicas: 4 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: reservation-service }
+spec: { replicas: 3 }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: queue-hpa, namespace: ticketing }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: queue-service }
+  minReplicas: 4
+  maxReplicas: 40
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }

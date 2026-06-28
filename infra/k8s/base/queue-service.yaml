@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: queue-service, namespace: ticketing }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: queue-service } }
+  template:
+    metadata: { labels: { app: queue-service } }
+    spec:
+      containers:
+        - name: queue-service
+          image: ticketing-queue-service:latest
+          ports: [{ containerPort: 3101 }]
+          envFrom:
+            - configMapRef: { name: back-config }
+            - secretRef: { name: back-secret }
+          resources:
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits: { cpu: "1", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: queue-service, namespace: ticketing }
+spec:
+  selector: { app: queue-service }
+  ports: [{ port: 3101, targetPort: 3101 }]

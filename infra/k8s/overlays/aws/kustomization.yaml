@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ticketing
+# 관리형 서비스 사용 → 클러스터 내 redis/kafka/postgres 제외
+resources:
+  - ../../base
+patches:
+  - path: replicas-patch.yaml
+  - path: drop-stateful.yaml   # base의 redis/kafka/postgres 삭제
+  - path: alb-ingress.yaml
+configMapGenerator:
+  - name: back-config
+    behavior: create
+    envs:
+      - managed-endpoints.env   # ElastiCache/MSK/RDS 엔드포인트
+secretGenerator:
+  - name: back-secret
+    literals:
+      - JWT_SECRET=__inject_via_secrets_manager__

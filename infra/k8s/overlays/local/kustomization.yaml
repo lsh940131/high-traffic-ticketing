@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ticketing
+resources:
+  - ../../base
+configMapGenerator:
+  - name: back-config
+    literals:
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - DATABASE_URL=postgresql://ticket:ticket@postgres:5432/ticketing
+      - QUEUE_URL=http://queue-service:3101
+      - RESERVATION_URL=http://reservation-service:3102
+      - QUEUE_ACTIVE_CAPACITY=500
+secretGenerator:
+  - name: back-secret
+    literals:
+      - JWT_SECRET=local-dev

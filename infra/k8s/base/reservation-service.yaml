@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: reservation-service, namespace: ticketing }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: reservation-service } }
+  template:
+    metadata: { labels: { app: reservation-service } }
+    spec:
+      containers:
+        - name: reservation-service
+          image: ticketing-reservation-service:latest
+          ports: [{ containerPort: 3102 }]
+          envFrom:
+            - configMapRef: { name: back-config }
+            - secretRef: { name: back-secret }
+          resources:
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits: { cpu: "1", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: reservation-service, namespace: ticketing }
+spec:
+  selector: { app: reservation-service }
+  ports: [{ port: 3102, targetPort: 3102 }]

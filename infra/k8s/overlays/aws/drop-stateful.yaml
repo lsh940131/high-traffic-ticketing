@@ -1,0 +1,5 @@
+# 관리형 서비스로 대체되므로 클러스터 내 상태 저장소 제거
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: redis, namespace: ticketing }
