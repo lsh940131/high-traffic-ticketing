@@ -51,8 +51,8 @@ High-Traffic Ticketing — 티켓 오픈 순간 트래픽 폭증을 견디는 �
 - [x] `04`(페이지 "04 · Screens - Home" = 홈): 콘서트 목록(데스크탑 **5×2=10개**, NOL 방식·페이지네이션 없음, vertical>row>FILL 그리드). 포스터 full-bleed 3:4(240×320). 02 마스터=home 크기(240×424). 하단 `Footer`(2컬럼+면책·저작권). `AppBar`/`Tab`/`ConcertCard`/`Avatar`/`Footer` 인스턴스.
 - [x] **상세(P2, 04 페이지 `Detail` 31:289)**: 좌(포스터 300×400 + 정보 + 공연정보|판매정보 탭) / 우(BookingPanel: 캘린더+회차+예매하기, sticky). 캘린더·회차칩은 상세 전용(컴포넌트화 제외).
 - [x] **02 승격 정리**: 마스터 15개 확인. Button/Field/Checkbox/AppBar/Tab/ConcertCard/Avatar/StatusBadge/Footer ✅. 고아 `Pagination` 마스터 삭제. 남은 정리=StatusBadge 3개 마스터 variants 합치기(사용자).
-- [ ] **다음**: `대기열(S2)` 화면. 상태 2종(대기중: 앞 N명·예상 M분·진행바·이탈경고 / 입장가능: 지금 입장 CTA·토큰 만료 카운트다운). 기획=`SCREENS.md`. 기획상 캔버스는 `03 · Screens — Discover & Seat`이나, 현재 페이지 운영에 맞춰 둘 곳 사용자와 확정.
-- [ ] 이후: 좌석선택(P3) → 주문확인 → 결제처리중(S5) → 결과 → 마이페이지, 그리고 모바일 프레임(2열) 재구성.
+- [x] **대기열(S2)**: 2상태 그림(04 페이지, Detail 아래에 나란히). 대기중(순번·진행바·예상시간·이탈경고·나가기 ghost) / 입장가능(체크 헤딩·카운트다운·지금 입장 Button/primary). AppBar·Button/primary 재사용. 신규 후보=QueueProgress/ProgressBar/Button-ghost. ※ 입장가능 프레임 이름 리네임 필요(복제 흔적).
+- [ ] **다음**: 좌석선택(P3) → 주문확인 → 결제처리중(S5) → 결과 → 마이페이지, 그리고 모바일 프레임(2열) 재구성.
 - 방향: 데스크탑 우선·라이트 우선.
 - 주의: TalkToFigma 채널 ID는 세션마다 바뀜 → 작업 시작 시 사용자에게 채널ID를 받아 `join_channel`.
 

@@ -22,7 +22,9 @@
 - ~~`CalendarDayCell`~~ — **제외**: 상세 캘린더는 상세에서만 쓰므로 컴포넌트화 안 함(프레임 유지). ※ 옛 `DateChip`도 폐기(회차 칩의 오기였음).
 - ~~`RoundChip`~~ — **제외**: 상세 BookingPanel 전용 1회성 → 프레임 유지.
 - [x] `Footer` — 2컬럼(회사정보/고객센터) + 면책·저작권 (02 승격 완료, 04 Home에 인스턴스 반영)
-- [ ] `QueueProgress` — 대기 순번 카드 (S2 그릴 때 등장 예정, 아직 미작성)
+- [ ] `QueueProgress` — 순번+진행바+예상시간 묶음 (S2 대기중 카드에 그림, 승격 대기)
+- [ ] `ProgressBar` — track + fill (atom, S2 진행바)
+- [ ] `Button/ghost` — 보조 액션(예: 대기 나가기). 현재 프레임으로 그림 → Button 그룹에 ghost variant로 합치기 후보
 - ~~`Pagination`~~ — **폐기 완료**: 홈 5×2=10개로 불필요. 고아 마스터 삭제됨.
 
 ## 레지스트리
@@ -72,6 +74,7 @@
 - 상세 페이지(P2, 04 페이지 Home 우측) 재구성(NOL 참고): 좌측 세로 포스터 + 정보 + **우측 예매 패널(달력+회차+예매하기)** + 하단 탭(공연정보|판매정보). AppBar·Button 인스턴스 재사용. 신규: `BookingPanel`/`Calendar`, `RoundChip`(회차). 포스터 **3:4 세로**(목록=상세 동일).
 - 홈을 NOL 방식 **5/행 × 2행 = 10개**로 변경, **페이지네이션 제거**(`Pagination` 컴포넌트 후보 폐기). 콘서트 10번째(혁오, 예매중) 추가. 정렬: 예매중 6 → 오픈예정 2 → 매진 2.
 - ConcertCard 포스터를 **full-bleed**로(카드 좌우·상단 패딩 0, info에만 패딩 16) → 포스터가 카드폭(≈240)을 꽉 채워 NOL과 동일. 높이 320으로 3:4 복원(240×320). 10개 일괄 반영. 02 마스터=240×424.
+- 대기열(S2) 2상태 그림(04 페이지, Detail 아래): `대기중`(미니 컨텍스트+순번 12,480+진행바+예상시간+이탈경고+나가기 ghost), `입장가능`(체크 헤딩+카운트다운 02:58+지금 입장 Button/primary). AppBar·Button/primary 재사용. 신규 후보 QueueProgress/ProgressBar/Button-ghost. ※ 복제로 만든 입장가능 프레임 이름이 아직 "대기중"이라 사용자가 리네임 필요.
 - 02 승격 현황 점검(get_local_components): 마스터 15개 확인. Button/Field/Checkbox/AppBar/Tab/ConcertCard/Avatar/StatusBadge ✅ 승격됨.
 - `Footer` 02 승격 완료 → 04 Home에 인스턴스로 반영. 고아였던 `Pagination` 마스터 삭제 완료.
 - 상세 캘린더(CalendarDayCell)·회차칩(RoundChip)은 상세 전용 1회성 → 컴포넌트화 제외(프레임 유지). 옛 `DateChip` 폐기.
