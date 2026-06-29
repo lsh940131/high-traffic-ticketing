@@ -71,15 +71,30 @@ User ◀─ Queue: 대기 토큰 + 내 순번
    ... 폴링 ...
 Worker ─▶ Redis: ZPOPMIN → 입장 가능
 User ◀─ Queue: 입장 토큰(JWT)
-User ─▶ Reservation API: 좌석 점유 (입장 토큰 필요)
-Reservation ─▶ Redis(Lua): 재고 차감 + hold(TTL)
-User ─▶ Reservation API: 예매 확정
-Reservation ─▶ Kafka: produce reservation.requested → 202
-Consumer ─▶ DB: 재고 확정 + 주문 생성
-Consumer ─▶ Payment: 결제 요청
-Consumer ─▶ Redis: 결과 저장
+User ─▶ Reservation API: 좌석 점유(hold) (입장 토큰 필요)
+Reservation ─▶ Redis(Lua): 점유 차감 + HELD(TTL)     ── 좌석=HELD, 주문=PENDING_PAYMENT
+User ─▶ Reservation API: 결제 진행 요청
+Reservation ─▶ Kafka: produce reservation.requested → 202   ── 주문=PROCESSING
+Consumer ─▶ Payment: 결제 (성공해야 다음 단계로)
+Consumer ─▶ Redis/DB: 좌석 SOLD + 주문 CONFIRMED      ── 결제 성공 후에만 확정
 User ◀─ (폴링/WS): 예매 완료
 ```
+
+## 7.1 좌석/주문 상태 머신 (결제 실패 처리 포함)
+
+확정(SOLD)은 **결제 성공 후에만** 일어난다. 처리중에 미리 확정하지 않는다.
+
+```
+좌석:  AVAILABLE ─점유→ HELD(TTL N분) ─결제성공→ SOLD
+                          └─(TTL 만료 / 사용자 취소)→ AVAILABLE
+주문:  PENDING_PAYMENT → PROCESSING → CONFIRMED
+                                   ├→ PAYMENT_FAILED  (좌석은 HELD 유지)
+                                   └→ EXPIRED         (TTL 만료 시에만 좌석 release)
+```
+
+- **결제 실패 ≠ 좌석 즉시 release.** 사용자에게 이미 "N분 안에 결제" 점유 타이머를 약속했으므로 그 타이머가 공정한 경계다. 실패 시 같은 좌석을 HELD로 유지한 채 재시도/다른 결제수단을 제공한다.
+- 좌석 release는 오직 (a) 점유 TTL 만료, (b) 사용자의 명시적 취소. 시스템이 결제 실패를 이유로 좌석을 회수하지 않는다(bad UX 회피).
+- `payment-service` 컨슈머는 이 모델대로 동작한다: 결제 먼저 → 성공 시에만 좌석 SOLD, 실패 시 주문만 FAILED로 두고 좌석은 건드리지 않음.
 
 ## 8. 환경 분리 전략 (local / dev / aws)
 
