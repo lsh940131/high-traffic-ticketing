@@ -1,19 +1,60 @@
-/* figma/DESIGN-TOKENS.md 와 동기화 */
-:root {
+/* figma/DESIGN-TOKENS.md 와 동기화. 역할 기반 토큰 + 테마 2벌. */
+
+/* 기본 = dark (다크 우선) */
+:root,
+:root[data-theme='dark'] {
   --color-bg: #0B0E14;
   --color-surface: #161B26;
-  --color-primary: #4F8CFF;
+  --color-surface-2: #1E2533;
+  --color-border: #2A2F3A;
+  --color-primary: #5B6CF0;
+  --color-on-primary: #FFFFFF;
   --color-success: #2ECC71;
   --color-warning: #F5A623;
   --color-danger: #FF4D4F;
   --color-text: #E6E9EF;
   --color-text-muted: #8A93A6;
+}
+
+/* light = 색 교체 (반전 아님 — 대비용으로 일부 색 더 진하게) */
+:root[data-theme='light'] {
+  --color-bg: #F7F8FA;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #EEF1F6;
+  --color-border: #E2E6ED;
+  --color-primary: #4A57D6;
+  --color-on-primary: #FFFFFF;
+  --color-success: #1B9E54;
+  --color-warning: #B26A00;
+  --color-danger: #E03131;
+  --color-text: #1A1D24;
+  --color-text-muted: #5F6878;
+}
+
+/* 시스템 설정 자동 추종 (data-theme 미지정 시) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --color-bg: #F7F8FA; --color-surface: #FFFFFF; --color-surface-2: #EEF1F6;
+    --color-border: #E2E6ED; --color-primary: #4A57D6; --color-on-primary: #FFFFFF;
+    --color-success: #1B9E54; --color-warning: #B26A00; --color-danger: #E03131;
+    --color-text: #1A1D24; --color-text-muted: #5F6878;
+  }
+}
+
+:root {
   --space-1: 4px; --space-2: 8px; --space-3: 12px;
   --space-4: 16px; --space-6: 24px; --space-8: 32px;
-  --radius: 8px; --radius-card: 16px;
+  --radius: 8px; --radius-card: 16px; --radius-pill: 999px;
 }
-body { background: var(--color-bg); color: var(--color-text);
-  font-family: Pretendard, Inter, system-ui, sans-serif; margin: 0; padding: var(--space-8); }
-.queue-progress .bar { height: 10px; background: var(--color-surface);
-  border-radius: var(--radius); overflow: hidden; margin-top: var(--space-3); }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: Pretendard, Inter, system-ui, sans-serif;
+  margin: 0; padding: var(--space-8);
+}
+.queue-progress .bar {
+  height: 10px; background: var(--color-surface-2);
+  border-radius: var(--radius); overflow: hidden; margin-top: var(--space-3);
+}
 .queue-progress .fill { height: 100%; background: var(--color-primary); transition: width .4s; }
