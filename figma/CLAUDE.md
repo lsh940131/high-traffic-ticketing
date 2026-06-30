@@ -52,7 +52,9 @@ High-Traffic Ticketing — 티켓 오픈 순간 트래픽 폭증을 견디는 �
 - [x] **상세(P2, 04 페이지 `Detail` 31:289)**: 좌(포스터 300×400 + 정보 + 공연정보|판매정보 탭) / 우(BookingPanel: 캘린더+회차+예매하기, sticky). 캘린더·회차칩은 상세 전용(컴포넌트화 제외).
 - [x] **02 승격 정리**: 마스터 15개 확인. Button/Field/Checkbox/AppBar/Tab/ConcertCard/Avatar/StatusBadge/Footer ✅. 고아 `Pagination` 마스터 삭제. 남은 정리=StatusBadge 3개 마스터 variants 합치기(사용자).
 - [x] **대기열(S2)**: 2상태 그림(04 페이지, Detail 아래에 나란히). 대기중(순번·진행바·예상시간·이탈경고·나가기 ghost) / 입장가능(체크 헤딩·카운트다운·지금 입장 Button/primary). AppBar·Button/primary 재사용. 신규 후보=QueueProgress/ProgressBar/Button-ghost. ※ 입장가능 프레임 이름 리네임 필요(복제 흔적).
-- [ ] **다음**: 좌석선택(P3) → 주문확인 → 결제처리중(S5) → 결과 → 마이페이지, 그리고 모바일 프레임(2열) 재구성.
+- [x] **좌석선택(P3, 04 페이지 "좌석 선택" 42:128)**: 좌(구역맵: STAGE+FLOOR/1·2·3층 블록, 103 선택 → 하단 좌석 그리드 full-width, 상태색 3종(선택가능/선택됨/선택불가)+범례 — HELD는 실사처럼 UI 비노출, 백엔드 상태로만) / 우(예약 패널: 컨텍스트, 등급·잔여 4종 R석 선택, 선택좌석 칩 2/2, 1인 2매, 합계, 다음 Button/primary). 기준 공연장=인스파이어 아레나. 좌석 그리드는 대표 크기(API 제약상 6행×20석). 신규 후보=SeatTile(선택가능/선택됨/선택불가)·GradeRow·StandingZone.
+- 프레임 네이밍: S2/S3 프리픽스 없이 평범하게(예: "좌석 선택"). 캔버스 순서가 곧 플로우.
+- [ ] **다음**: 주문확인 → 결제처리중(S5) → 결과 → 마이페이지, 그리고 모바일 프레임(2열) 재구성.
 - 방향: 데스크탑 우선·라이트 우선.
 - 주의: TalkToFigma 채널 ID는 세션마다 바뀜 → 작업 시작 시 사용자에게 채널ID를 받아 `join_channel`.
 
