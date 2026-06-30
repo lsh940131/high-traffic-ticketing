@@ -52,9 +52,14 @@ High-Traffic Ticketing — 티켓 오픈 순간 트래픽 폭증을 견디는 �
 - [x] **상세(P2, 04 페이지 `Detail` 31:289)**: 좌(포스터 300×400 + 정보 + 공연정보|판매정보 탭) / 우(BookingPanel: 캘린더+회차+예매하기, sticky). 캘린더·회차칩은 상세 전용(컴포넌트화 제외).
 - [x] **02 승격 정리**: 마스터 15개 확인. Button/Field/Checkbox/AppBar/Tab/ConcertCard/Avatar/StatusBadge/Footer ✅. 고아 `Pagination` 마스터 삭제. 남은 정리=StatusBadge 3개 마스터 variants 합치기(사용자).
 - [x] **대기열(S2)**: 2상태 그림(04 페이지, Detail 아래에 나란히). 대기중(순번·진행바·예상시간·이탈경고·나가기 ghost) / 입장가능(체크 헤딩·카운트다운·지금 입장 Button/primary). AppBar·Button/primary 재사용. 신규 후보=QueueProgress/ProgressBar/Button-ghost. ※ 입장가능 프레임 이름 리네임 필요(복제 흔적).
-- [x] **좌석선택(P3, 04 페이지 "좌석 선택" 42:128)**: 좌(구역맵: STAGE+FLOOR/1·2·3층 블록, 103 선택 → 하단 좌석 그리드 full-width, 상태색 3종(선택가능/선택됨/선택불가)+범례 — HELD는 실사처럼 UI 비노출, 백엔드 상태로만) / 우(예약 패널: 컨텍스트, 등급·잔여 4종 R석 선택, 선택좌석 칩 2/2, 1인 2매, 합계, 다음 Button/primary). 기준 공연장=인스파이어 아레나. 좌석 그리드는 대표 크기(API 제약상 6행×20석). 신규 후보=SeatTile(선택가능/선택됨/선택불가)·GradeRow·StandingZone.
+- [x] **좌석선택(P3, 04 페이지 "좌석 선택" 42:128)**: 좌(구역맵: STAGE+FLOOR/1·2·3층 블록, 103 선택 → 하단 좌석 그리드 full-width, 상태색 3종(선택가능/선택됨/선택불가)+범례 — HELD는 실사처럼 UI 비노출, 백엔드 상태로만) / 우(예약 패널: 컨텍스트, 등급·잔여 4종 R석 선택, 선택좌석 칩 2/2, 1인 2매, 합계, 다음 Button/primary). 기준 공연장=인스파이어 아레나. 좌석 그리드 대표 크기 6행×20석. **`SeatTile`(seat/can·selected·disabled)·`ZoneBlock`(default·selected·disabled) variants 컴포넌트화 + P3 전체 적용 완료**(좌석 120·구역 22 인스턴스). 좌석 상태색: 선택가능(연회색)/선택됨(파랑)/선택불가(진회색).
 - 프레임 네이밍: S2/S3 프리픽스 없이 평범하게(예: "좌석 선택"). 캔버스 순서가 곧 플로우.
-- [ ] **다음**: 주문확인 → 결제처리중(S5) → 결과 → 마이페이지, 그리고 모바일 프레임(2열) 재구성.
+- [x] **주문확인(P4, 04 페이지 "주문 확인" 53:179)**: 좌(예매 정보 요약 / 결제 금액: 티켓 286,000+수수료 4,000+배송 0=290,000 / 약관 동의: 전체+필수3, Checkbox 재사용) / 우 sticky(점유 타이머 06:48 + 공연 요약 + 최종금액 + 결제하기). 결제수단 UI는 생략(약관+결제하기만). AppBar·Checkbox·Button/primary 재사용.
+- [x] **결제 결과(S5, 04 페이지 "결제 결과" 54:281)**: AppBar + 중앙 상태 카드. 상태는 `StatusResult` **4 variant 블록**(processing/confirmed/failed/expired)을 옆에 나열(53:247)해 컴포넌트화 대기. 실패=좌석유지(점유 타이머 남음)+다시결제, 만료=좌석해제+다시예매. 비동기(Kafka 202→폴링) 표현. 신규 후보=StatusResult(4 variant)·Button/ghost.
+- [x] **마이페이지(M, 04 페이지 "마이페이지" 55:295)**: AppBar/Footer 자리는 사용자가 인스턴스 끼워넣게 비워둠(세로 오토레이아웃). 본문="예매 내역" + 예매 행 리스트 3건(상태 섞음). 행=포스터+배지+공연명·일시·장소+좌석·매수 / 우측 금액+보조액션. 상태배지: 예매완료(success·예매취소) / 관람완료(neutral·액션없음) / 취소됨(danger·환불완료, 흐리게). 상세보기는 스코프 밖(미구현). 신규 후보=`BookingRow`·`Button/ghost`.
+- [x] **확인 모달(Modal/confirm)**: 예매 취소 재확인 다이얼로그(59:511). scrim+흰 박스+돌아가기/예매취소(danger).
+- [x] **2차 컴포넌트 승격(사용자)**: StatusResult(Feedback 섹션 신설)·BookingRow·Modal/confirm(Base)·Button/ghost·Button/danger(Actions). **Figma 핵심 작업 일단락.**
+- [ ] **다음 단계(프로젝트 전환)**: ① master 머지(사용자 — 마운트 .git라 Claude가 커밋 불가) → ② infra 구축 → ③ back 작업. Figma 잔여(모바일 재구성·프로토타입·StatusBadge 합치기)는 선택·후순위.
 - 방향: 데스크탑 우선·라이트 우선.
 - 주의: TalkToFigma 채널 ID는 세션마다 바뀜 → 작업 시작 시 사용자에게 채널ID를 받아 `join_channel`.
 
