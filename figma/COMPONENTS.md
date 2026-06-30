@@ -24,7 +24,12 @@
 - [x] `Footer` — 2컬럼(회사정보/고객센터) + 면책·저작권 (02 승격 완료, 04 Home에 인스턴스 반영)
 - [x] `SeatTile` — **variants 묶음 완료**: `seat/can`(선택가능) / `seat/selected`(선택됨) / `seat/disabled`(선택불가). **P3 좌석 120칸 전부 인스턴스로 적용 완료**(30×22). 마스터 수정 시 전체 동기화.
 - [x] `ZoneBlock` — **variants 묶음 완료**: `zoneblock`(default) / `zoneblock/selected` / `zoneblock/disabled`. **P3 구역 블록 22개 전부 인스턴스로 적용 완료**(46×28). FLOOR(스탠딩)는 일회성이라 프레임 유지.
-- ~~`QueueProgress`/`ProgressBar`/`Button/ghost`~~ — **제외**: S2 대기열 한 화면 전용 1회성 → 프레임 유지(계산기 캘린더·회차칩과 같은 기준).
+- [x] `StatusResult` — processing / confirmed / failed / expired (S5 결제 결과 상태 블록). **02 Feedback 섹션 신설 후 승격 완료**(4 variant).
+- ~~`QueueProgress`/`ProgressBar`~~ — **제외**: S2 대기열 한 화면 전용 1회성 → 프레임 유지(상세 캘린더·회차칩과 같은 기준).
+- [x] `Button/ghost` — 보조 버튼(테두리형). **02 Actions 섹션 승격 완료**.
+- [x] `BookingRow` — 마이페이지 예매 행(상태 variant: 예매완료/관람완료/취소됨). **02 승격 완료**.
+- [x] `Modal/confirm` — 확인 다이얼로그(제목+본문+2버튼). **02 Base 섹션 승격 완료**(흰 카드 본체). 오버레이(scrim)는 컴포넌트 외부 — 띄우는 화면 위에 딤 깔고 다이얼로그 인스턴스 얹기.
+- [x] `Button/danger` — 파괴적 액션(취소·삭제)용 빨강 버튼. **02 Actions 섹션 승격 완료**.
 - ~~`Pagination`~~ — **폐기 완료**: 홈 5×2=10개로 불필요. 고아 마스터 삭제됨.
 
 ## 레지스트리
@@ -81,3 +86,9 @@
 - 상세 캘린더(CalendarDayCell)·회차칩(RoundChip)은 상세 전용 1회성 → 컴포넌트화 제외(프레임 유지). 옛 `DateChip` 폐기.
 - 남은 정리(사용자): StatusBadge 마스터 3개 분리 → variants(booking/openSoon/soldout)로 Combine + 이름 정정.
 - 홈 하단 `Footer` 추가(NOL 방식): 2컬럼(회사정보/고객센터) + 면책·저작권. 흰 배경·상단 border, 내부 패딩 40, 전 페이지 공통 하단 후보. 회사·연락처는 모두 포트폴리오 데모 예시(TicketingLab). (정책 링크 줄·이용안내 컬럼은 링크처럼 보여 제외 — 정적 정보만.)
+- `SeatTile`(seat/can·selected·disabled)·`ZoneBlock`(default·selected·disabled) **variants 묶음 + 이름 정정 완료**, P3 좌석 120·구역 22 전부 인스턴스로 적용 완료. 좌석 상태색 3종(연회색/파랑/진회색), HELD는 UI 비노출(백엔드 상태).
+- **주문 확인(P4)** 그림(04 "주문 확인" 53:179): 좌 상세(요약/금액 290,000/약관 전체+필수3) / 우 sticky(점유 타이머+금액+결제하기). 결제수단 생략. Checkbox·Button 재사용.
+- **결제 결과(S5+R)** 그림(04 "결제 결과" 54:281): AppBar+중앙 상태 카드. `StatusResult` 4 variant 블록(processing/confirmed/failed/expired)을 옆(53:247)에 나란히 → 컴포넌트화 대기. 실패=좌석유지, 만료=좌석해제. Button/ghost(홈으로) 등장 → ghost variant 후보 격상.
+- **마이페이지(M)** 그림(04 "마이페이지" 55:295): AppBar/Footer 자리 비움(세로 오토레이아웃, 사용자가 인스턴스 삽입). 본문=예매 내역 리스트 3건(예매완료/관람완료/취소됨 상태 섞음). 관람완료는 액션 없음(상세보기는 스코프 밖). 신규 후보 `BookingRow`. 핵심 데스크탑 화면 7종 완료.
+- **Modal/confirm**(확인 다이얼로그) 그림(59:511): scrim + 흰 다이얼로그(제목·본문·돌아가기/예매취소 2버튼). 예매 취소 재확인용. 신규 후보 `Modal/confirm`(Base 섹션)·`Button/danger`. scrim 투명도는 Figma에서 조정.
+- **2차 승격 완료(사용자)**: `StatusResult`(Feedback 섹션 신설)·`BookingRow`·`Modal/confirm`(Base)·`Button/ghost`·`Button/danger`(Actions). Figma 핵심 작업 일단락. 남은 정리=StatusBadge 3마스터 합치기(선택).
