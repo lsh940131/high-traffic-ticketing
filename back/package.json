@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "scripts": {
     "build": "nest build gateway && nest build queue-service && nest build reservation-service && nest build payment-service",
+    "build:gateway": "nest build gateway",
+    "build:queue-service": "nest build queue-service",
+    "build:reservation-service": "nest build reservation-service",
+    "build:payment-service": "nest build payment-service",
     "start:gateway": "nest start gateway --watch",
     "start:queue": "nest start queue-service --watch",
     "start:reservation": "nest start reservation-service --watch",
