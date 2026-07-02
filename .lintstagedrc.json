@@ -1,0 +1,13 @@
+{
+  "back/**/*.{ts,js}": [
+    "eslint --config back/eslint.config.mjs --fix",
+    "prettier --write"
+  ],
+  "front/**/*.{ts,tsx,js,jsx}": [
+    "eslint --config front/eslint.config.mjs --fix",
+    "prettier --write"
+  ],
+  "infra/**/*.{yaml,yml,json}": [
+    "prettier --write"
+  ]
+}

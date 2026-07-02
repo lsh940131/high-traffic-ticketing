@@ -1,0 +1,27 @@
+{
+  "name": "high-traffic-ticketing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "루트: 협업용 도구(husky/lint-staged/commitlint) + 공용 lint/format 툴체인. 앱은 back/ front/ 각자 package.json.",
+  "scripts": {
+    "prepare": "husky",
+    "lint": "eslint --config back/eslint.config.mjs back && eslint --config front/eslint.config.mjs front",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.4.0",
+    "@eslint/js": "^9.9.0",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.9",
+    "globals": "^15.9.0",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.2.0"
+  }
+}

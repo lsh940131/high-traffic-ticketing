@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+coverage
+back/dist
+front/dist
+# 디자인 스펙(md)·산출물은 포맷 대상 아님
+figma
