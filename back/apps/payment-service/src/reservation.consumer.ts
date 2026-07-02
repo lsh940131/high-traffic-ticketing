@@ -23,7 +23,9 @@ export class ReservationConsumer implements OnModuleInit {
     await consumer.connect();
     await consumer.subscribe({ topic: TOPICS.RESERVATION_REQUESTED, fromBeginning: false });
     await consumer.run({
-      eachMessage: async ({ message }) => this.handle(JSON.parse(message.value!.toString())),
+      eachMessage: async ({ message }) => {
+        await this.handle(JSON.parse(message.value!.toString()));
+      },
     });
   }
 
@@ -31,7 +33,12 @@ export class ReservationConsumer implements OnModuleInit {
     const fresh = await this.redis.set(`processed:${evt.reservationId}`, '1', 'EX', 3600, 'NX');
     if (!fresh) return;
     const save = (state: string, extra: object = {}) =>
-      this.redis.set(`reservation:${evt.reservationId}`, JSON.stringify({ state, ...extra }), 'EX', 3600);
+      this.redis.set(
+        `reservation:${evt.reservationId}`,
+        JSON.stringify({ state, ...extra }),
+        'EX',
+        3600,
+      );
 
     const orderNo = `ORD-${evt.reservationId.slice(0, 8)}`;
     const pay = await this.payment.charge(orderNo, 0);
