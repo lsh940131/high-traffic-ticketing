@@ -12,6 +12,9 @@
     "start:reservation": "nest start reservation-service --watch",
     "start:payment": "nest start payment-service --watch",
     "start:all": "concurrently -n gw,queue,resv,pay \"npm:start:gateway\" \"npm:start:queue\" \"npm:start:reservation\" \"npm:start:payment\"",
+    "infra:up": "docker compose -f ../infra/docker/docker-compose.yml up -d --wait",
+    "infra:down": "docker compose -f ../infra/docker/docker-compose.yml down",
+    "dev": "npm run infra:up && npm run start:all",
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
