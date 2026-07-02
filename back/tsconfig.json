@@ -12,6 +12,7 @@
     "incremental": true,
     "skipLibCheck": true,
     "paths": {
+      "@app/config":    ["libs/config/src"],
       "@app/redis":     ["libs/redis/src"],
       "@app/kafka":     ["libs/kafka/src"],
       "@app/contracts": ["libs/contracts/src"],

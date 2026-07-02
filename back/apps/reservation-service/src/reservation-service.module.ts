@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AppConfigModule } from '@app/config';
 import { RedisModule } from '@app/redis';
 import { KafkaModule } from '@app/kafka';
 import { ReservationController } from './reservation.controller';
@@ -7,7 +8,7 @@ import { InventoryService } from './inventory/inventory.service';
 import { EventController } from './event/event.controller';
 
 @Module({
-  imports: [RedisModule, KafkaModule],
+  imports: [AppConfigModule, RedisModule, KafkaModule],
   controllers: [ReservationController, EventController],
   providers: [ReservationProducer, InventoryService],
 })

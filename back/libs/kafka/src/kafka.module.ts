@@ -1,5 +1,7 @@
 import { Global, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Kafka } from 'kafkajs';
+import { EnvironmentVariables } from '@app/config';
 
 export const KAFKA = Symbol('KAFKA');
 
@@ -8,10 +10,11 @@ export const KAFKA = Symbol('KAFKA');
   providers: [
     {
       provide: KAFKA,
-      useFactory: () =>
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<EnvironmentVariables, true>) =>
         new Kafka({
           clientId: process.env.SERVICE_NAME ?? 'ticketing',
-          brokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(','),
+          brokers: config.get('KAFKA_BROKERS', { infer: true }).split(','),
         }),
     },
   ],
