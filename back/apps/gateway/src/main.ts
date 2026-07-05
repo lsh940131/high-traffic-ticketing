@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { GatewayModule } from './gateway.module';
+import { GatewayModule } from './gateway/gateway.module';
 
 async function bootstrap() {
   process.env.SERVICE_NAME = 'gateway';

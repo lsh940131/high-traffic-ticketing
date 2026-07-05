@@ -4,8 +4,8 @@ import { randomUUID } from 'crypto';
 import { REDIS } from '@app/redis';
 import { EntryTokenGuard } from '@app/common';
 import { CreateReservationDto } from '@app/contracts';
-import { ReservationProducer } from './reservation.producer';
-import { InventoryService } from './inventory/inventory.service';
+import { ReservationProducer } from './messaging/reservation.producer';
+import { InventoryService } from '../inventory/inventory.service';
 
 /** 전략②③: 좌석 hold(재고 동시성) + 예매 요청 Kafka 발행. */
 @Controller('reservations')
@@ -29,14 +29,26 @@ export class ReservationController {
   @UseGuards(EntryTokenGuard)
   async create(@Body() dto: CreateReservationDto) {
     const reservationId = randomUUID();
-    await this.redis.set(`reservation:${reservationId}`, JSON.stringify({ state: 'PROCESSING' }), 'EX', 3600);
-    await this.producer.emit({ reservationId, eventId: dto.eventId, seatId: dto.seatId, userId: dto.userId ?? 'anon' });
+    await this.redis.set(
+      `reservation:${reservationId}`,
+      JSON.stringify({ state: 'PROCESSING' }),
+      'EX',
+      3600,
+    );
+    await this.producer.emit({
+      reservationId,
+      eventId: dto.eventId,
+      seatId: dto.seatId,
+      userId: dto.userId ?? 'anon',
+    });
     return { reservationId };
   }
 
   @Get(':id')
   async result(@Param('id') id: string) {
     const raw = await this.redis.get(`reservation:${id}`);
-    return raw ? { reservationId: id, ...JSON.parse(raw) } : { reservationId: id, state: 'PROCESSING' };
+    return raw
+      ? { reservationId: id, ...JSON.parse(raw) }
+      : { reservationId: id, state: 'PROCESSING' };
   }
 }

@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 import { KAFKA } from '@app/kafka';
 import { REDIS } from '@app/redis';
 import { TOPICS, ReservationRequested } from '@app/contracts';
-import { PaymentService } from './payment.service';
+import { PaymentService } from '../payment.service';
 
 /**
  * 전략③: reservation.requested 소비 → 결제 → 결과 저장.

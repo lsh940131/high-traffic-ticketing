@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { QueueService } from './queue.service';
+import { QueueService } from '../queue.service';
 
 /** 정원만큼 주기적으로 입장 처리. */
 @Injectable()

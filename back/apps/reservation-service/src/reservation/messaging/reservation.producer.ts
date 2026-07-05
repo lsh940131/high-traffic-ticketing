@@ -6,8 +6,12 @@ import { TOPICS, ReservationRequested } from '@app/contracts';
 @Injectable()
 export class ReservationProducer implements OnModuleInit {
   private producer: Producer;
-  constructor(@Inject(KAFKA) kafka: Kafka) { this.producer = kafka.producer(); }
-  async onModuleInit() { await this.producer.connect(); }
+  constructor(@Inject(KAFKA) kafka: Kafka) {
+    this.producer = kafka.producer();
+  }
+  async onModuleInit() {
+    await this.producer.connect();
+  }
 
   emit(payload: ReservationRequested) {
     return this.producer.send({

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ReservationServiceModule } from './reservation-service.module';
+import { ReservationServiceModule } from './reservation/reservation-service.module';
 
 async function bootstrap() {
   process.env.SERVICE_NAME = 'reservation-service';

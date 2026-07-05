@@ -2,7 +2,7 @@ import { All, Controller, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { EnvironmentVariables } from '@app/config';
-import { UpstreamService } from './upstream.service';
+import { UpstreamService } from './upstream/upstream.service';
 
 /**
  * 단일 진입점. 경로 prefix로 각 서비스에 REST 프록시.

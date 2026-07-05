@@ -5,7 +5,7 @@ import { AppConfigModule, EnvironmentVariables } from '@app/config';
 import { RedisModule } from '@app/redis';
 import { QueueController } from './queue.controller';
 import { QueueService } from './queue.service';
-import { QueueAdmissionWorker } from './queue.worker';
+import { QueueAdmissionWorker } from './worker/queue.worker';
 
 @Module({
   imports: [

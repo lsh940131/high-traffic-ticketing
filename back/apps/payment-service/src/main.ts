@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { PaymentServiceModule } from './payment-service.module';
+import { PaymentServiceModule } from './payment/payment-service.module';
 
 async function bootstrap() {
   process.env.SERVICE_NAME = 'payment-service';

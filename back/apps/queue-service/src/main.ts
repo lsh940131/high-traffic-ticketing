@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { QueueServiceModule } from './queue-service.module';
+import { QueueServiceModule } from './queue/queue-service.module';
 
 async function bootstrap() {
   process.env.SERVICE_NAME = 'queue-service';
