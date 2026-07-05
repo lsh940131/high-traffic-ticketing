@@ -59,6 +59,12 @@
       "entryFile": "index",
       "sourceRoot": "libs/kafka/src"
     },
+    "prisma": {
+      "type": "library",
+      "root": "libs/prisma",
+      "entryFile": "index",
+      "sourceRoot": "libs/prisma/src"
+    },
     "contracts": {
       "type": "library",
       "root": "libs/contracts",

@@ -15,6 +15,7 @@
       "@app/config":    ["libs/config/src"],
       "@app/redis":     ["libs/redis/src"],
       "@app/kafka":     ["libs/kafka/src"],
+      "@app/prisma":    ["libs/prisma/src"],
       "@app/contracts": ["libs/contracts/src"],
       "@app/common":    ["libs/common/src"]
     }

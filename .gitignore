@@ -6,3 +6,5 @@ dist/
 front/node_modules/
 back/node_modules/
 back/dist/
+# Prisma 7: 생성 클라이언트는 커밋하지 않고 prisma generate 로 재생성
+back/libs/prisma/generated/

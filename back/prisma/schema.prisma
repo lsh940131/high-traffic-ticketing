@@ -1,10 +1,11 @@
 // 진실의 원천(source of truth). Redis는 빠른 게이트, DB가 최종 정합성 보장.
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../libs/prisma/generated/prisma"
+  moduleFormat = "cjs"
 }
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Event {
