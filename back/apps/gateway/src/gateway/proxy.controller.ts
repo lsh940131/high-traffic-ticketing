@@ -1,4 +1,4 @@
-import { All, Controller, Req, Res } from '@nestjs/common';
+import { All, Controller, NotFoundException, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { EnvironmentVariables } from '@app/config';
@@ -31,10 +31,12 @@ export class ProxyController {
     ];
   }
 
-  @All('*')
+  // 프록시 대상 prefix만 바인딩. 게이트웨이 자신의 /metrics·/health·/docs를
+  // 삼키지 않도록 '*' 전체 와일드카드는 쓰지 않는다.
+  @All(['queue', 'queue/*', 'reservations', 'reservations/*', 'events', 'events/*'])
   async proxy(@Req() req: Request, @Res() res: Response) {
     const route = this.routes.find((r) => req.path.startsWith(r.prefix));
-    if (!route) return res.status(404).json({ message: 'no route' });
+    if (!route) throw new NotFoundException('no route');
 
     const result = await this.upstream.forward(route.target, {
       method: req.method as AxiosMethod,
@@ -43,6 +45,8 @@ export class ProxyController {
       headers: {
         'x-user-id': req.headers['x-user-id'],
         'x-entry-token': req.headers['x-entry-token'],
+        // 다운스트림에 요청 상관관계 전파 (게이트웨이가 발급한 id)
+        'x-request-id': (req as Request & { id?: string }).id,
       },
     });
     res.status(result.status).json(result.data);

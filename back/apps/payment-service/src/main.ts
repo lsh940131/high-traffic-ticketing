@@ -1,10 +1,8 @@
-import { NestFactory } from '@nestjs/core';
+import { bootstrapService } from '@app/common';
 import { PaymentServiceModule } from './payment/payment-service.module';
 
-async function bootstrap() {
-  process.env.SERVICE_NAME = 'payment-service';
-  // 결제는 HTTP 헬스체크만 노출하고 핵심은 Kafka consumer로 동작
-  const app = await NestFactory.create(PaymentServiceModule);
-  await app.listen(process.env.PORT ?? 3103);
-}
-bootstrap();
+// 결제는 HTTP(헬스체크·metrics·docs)만 노출하고 핵심은 Kafka consumer로 동작
+void bootstrapService(PaymentServiceModule, {
+  name: 'payment-service',
+  port: Number(process.env.PORT ?? 3103),
+});

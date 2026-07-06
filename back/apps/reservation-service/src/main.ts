@@ -1,9 +1,7 @@
-import { NestFactory } from '@nestjs/core';
+import { bootstrapService } from '@app/common';
 import { ReservationServiceModule } from './reservation/reservation-service.module';
 
-async function bootstrap() {
-  process.env.SERVICE_NAME = 'reservation-service';
-  const app = await NestFactory.create(ReservationServiceModule);
-  await app.listen(process.env.PORT ?? 3102);
-}
-bootstrap();
+void bootstrapService(ReservationServiceModule, {
+  name: 'reservation-service',
+  port: Number(process.env.PORT ?? 3102),
+});

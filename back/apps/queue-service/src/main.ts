@@ -1,9 +1,7 @@
-import { NestFactory } from '@nestjs/core';
+import { bootstrapService } from '@app/common';
 import { QueueServiceModule } from './queue/queue-service.module';
 
-async function bootstrap() {
-  process.env.SERVICE_NAME = 'queue-service';
-  const app = await NestFactory.create(QueueServiceModule);
-  await app.listen(process.env.PORT ?? 3101);
-}
-bootstrap();
+void bootstrapService(QueueServiceModule, {
+  name: 'queue-service',
+  port: Number(process.env.PORT ?? 3101),
+});

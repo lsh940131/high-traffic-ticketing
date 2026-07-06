@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { CommonModule } from '@app/common';
 import { AppConfigModule, EnvironmentVariables } from '@app/config';
 import { RedisModule } from '@app/redis';
 import { QueueController } from './queue.controller';
@@ -9,6 +10,7 @@ import { QueueAdmissionWorker } from './worker/queue.worker';
 
 @Module({
   imports: [
+    CommonModule.forRoot('queue-service'),
     AppConfigModule,
     RedisModule,
     JwtModule.registerAsync({

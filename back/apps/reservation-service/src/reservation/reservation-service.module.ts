@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CommonModule } from '@app/common';
 import { AppConfigModule } from '@app/config';
 import { RedisModule } from '@app/redis';
 import { KafkaModule } from '@app/kafka';
@@ -8,7 +9,7 @@ import { InventoryService } from '../inventory/inventory.service';
 import { EventController } from '../event/event.controller';
 
 @Module({
-  imports: [AppConfigModule, RedisModule, KafkaModule],
+  imports: [CommonModule.forRoot('reservation-service'), AppConfigModule, RedisModule, KafkaModule],
   controllers: [ReservationController, EventController],
   providers: [ReservationProducer, InventoryService],
 })
