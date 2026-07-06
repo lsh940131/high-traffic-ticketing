@@ -11,3 +11,23 @@ api.interceptors.request.use((config) => {
   if (token) config.headers['x-entry-token'] = token;
   return config;
 });
+
+// 백엔드 공통 봉투 처리
+//  - 성공 { success, data, meta } → response.data = 실제 data 로 언랩
+//  - 에러 { success:false, error:{ message } } → error.message 로 노출
+api.interceptors.response.use(
+  (response) => {
+    const body = response.data;
+    if (body && typeof body === 'object' && body.success === true && 'data' in body) {
+      response.data = body.data;
+    }
+    return response;
+  },
+  (error) => {
+    const body = error.response?.data;
+    if (body && body.success === false && body.error?.message) {
+      error.message = body.error.message;
+    }
+    return Promise.reject(error);
+  },
+);
