@@ -87,8 +87,12 @@ model Concert {
   venueId   String
   name      String
   artist    String
-  startsAt  DateTime // 공연 일시
+  startsAt  DateTime // 공연 시작 일시
+  endsAt    DateTime // 공연 종료 일시. 단일일이면 startsAt와 동일.
   opensAt   DateTime // 예매 오픈 일시
+  posterUrl String? // 포스터 이미지 URL
+  ageLimit  String? // 관람연령 (예: 만 7세 이상)
+  notice    String? // 유의사항
   tickets   Ticket[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
