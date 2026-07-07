@@ -7,6 +7,12 @@
   "compilerOptions": {
     "webpack": false,
     "tsConfigPath": "tsconfig.json",
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": { "dtoFileNameSuffix": [".dto.ts", "dto.ts"], "introspectComments": true }
+      }
+    ],
     "assets": [
       {
         "include": "inventory/lua/*.lua",
