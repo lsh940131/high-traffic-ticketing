@@ -24,7 +24,9 @@ export class ProxyController {
     const queueUrl = config.get('QUEUE_URL', { infer: true }) ?? 'http://localhost:3101';
     const reservationUrl =
       config.get('RESERVATION_URL', { infer: true }) ?? 'http://localhost:3102';
+    const userUrl = config.get('USER_URL', { infer: true }) ?? 'http://localhost:3104';
     this.routes = [
+      { prefix: '/auth', target: userUrl },
       { prefix: '/queue', target: queueUrl },
       { prefix: '/reservations', target: reservationUrl },
       { prefix: '/events', target: reservationUrl },
@@ -33,7 +35,16 @@ export class ProxyController {
 
   // 프록시 대상 prefix만 바인딩. 게이트웨이 자신의 /metrics·/health·/docs를
   // 삼키지 않도록 '*' 전체 와일드카드는 쓰지 않는다.
-  @All(['queue', 'queue/*', 'reservations', 'reservations/*', 'events', 'events/*'])
+  @All([
+    'auth',
+    'auth/*',
+    'queue',
+    'queue/*',
+    'reservations',
+    'reservations/*',
+    'events',
+    'events/*',
+  ])
   async proxy(@Req() req: Request, @Res() res: Response) {
     const route = this.routes.find((r) => req.path.startsWith(r.prefix));
     if (!route) throw new NotFoundException('no route');

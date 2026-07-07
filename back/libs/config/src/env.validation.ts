@@ -34,6 +34,7 @@ export class EnvironmentVariables {
   // ── gateway 전용 업스트림 (다른 서비스엔 없음 → 선택) ──
   @IsOptional() @IsString() QUEUE_URL?: string;
   @IsOptional() @IsString() RESERVATION_URL?: string;
+  @IsOptional() @IsString() USER_URL?: string;
 
   // ── 런타임 ──
   @IsOptional() @Transform(({ value }) => Number(value)) @IsInt() PORT?: number;

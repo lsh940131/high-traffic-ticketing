@@ -41,6 +41,12 @@
       "entryFile": "main",
       "sourceRoot": "apps/payment-service/src"
     },
+    "user-service": {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src"
+    },
     "config": {
       "type": "library",
       "root": "libs/config",

@@ -32,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else if (payload && typeof payload === 'object') {
         const p = payload as { message?: unknown };
         if (Array.isArray(p.message)) {
-          message = 'Validation failed';
+          message = typeof p.message[0] === 'string' ? p.message[0] : 'Validation failed';
           details = p.message;
         } else if (typeof p.message === 'string') {
           message = p.message;

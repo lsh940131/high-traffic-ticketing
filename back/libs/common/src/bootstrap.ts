@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import type { INestApplication, Type } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
@@ -20,6 +21,7 @@ export async function bootstrapService(
   process.env.SERVICE_NAME = opts.name; // kafka clientId 등에서 사용 (모듈 생성 전 설정)
   const app = await NestFactory.create(appModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   app.enableShutdownHooks();
   if (opts.cors) app.enableCors();
 
