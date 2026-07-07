@@ -4,9 +4,9 @@ import type { Params } from 'nestjs-pino';
 
 /**
  * nestjs-pino 설정 팩토리.
- *  - request-id: 요청에 x-request-id 있으면 그대로(게이트웨이가 전파), 없으면 생성 → 응답 헤더로 echo.
- *  - autoLogging: 요청/응답을 자동 로깅(req&res 로그).
- *  - dev는 pino-pretty로 보기 좋게, prod는 JSON 그대로.
+ *  - request-id: 요청에 x-request-id 있으면 그대로(게이트웨이가 전파), 없으면 생성 -> 응답 헤더로 echo.
+ *  - autoLogging: 요청/응답 자동 로깅. /metrics, /health 폴링은 제외(노이즈 제거).
+ *  - dev는 pino-pretty, prod는 JSON 그대로.
  */
 export function pinoParams(serviceName: string): Params {
   const isProd = process.env.NODE_ENV === 'production';
@@ -22,7 +22,6 @@ export function pinoParams(serviceName: string): Params {
       },
       customProps: () => ({ service: serviceName }),
       redact: ['req.headers.authorization', 'req.headers["x-entry-token"]'],
-      // 인프라 폴링(prometheus 스크레이프·헬스체크)은 요청 로깅에서 제외 → 노이즈 제거
       autoLogging: {
         ignore: (req: IncomingMessage) => {
           const url = req.url ?? '';
