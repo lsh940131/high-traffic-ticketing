@@ -8,33 +8,166 @@ datasource db {
   provider = "postgresql"
 }
 
-model Event {
-  id        String   @id @default(cuid())
-  title     String
-  openAt    DateTime
-  seats     Seat[]
-  createdAt DateTime @default(now())
+// ── enums ──────────────────────────────────────────────
+enum TicketStatus {
+  AVAILABLE
+  HELD
+  SOLD
 }
 
-model Seat {
-  id      String   @id @default(cuid())
-  event   Event    @relation(fields: [eventId], references: [id])
-  eventId String
-  grade   String
-  price   Int
-  // 오버셀 2차 방어선: (eventId, label) 유니크
-  label   String
-  order   Order?
-  @@unique([eventId, label])
+enum ReservationStatus {
+  PENDING // 결제 처리중
+  CONFIRMED
+  FAILED
+  CANCELLED
 }
 
-model Order {
-  id            String   @id @default(cuid())
-  orderNo       String   @unique
-  seat          Seat     @relation(fields: [seatId], references: [id])
-  seatId        String   @unique   // 좌석당 주문 1건 → DB 레벨 오버셀 차단
-  userId        String
-  state         String   // CONFIRMED | FAILED
-  paymentTxId   String?
-  createdAt     DateTime @default(now())
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  FAILED
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+}
+
+// ── user ───────────────────────────────────────────────
+// 인증은 짧은 AT(JWT)만. RT 없음. password_hash 저장(평문 X).
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+
+  @@map("users")
+}
+
+// ── venue (공연장) ──────────────────────────────────────
+model Venue {
+  id        String      @id @default(cuid())
+  name      String
+  location  String
+  seats     VenueSeat[]
+  concerts  Concert[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+
+  @@map("venues")
+}
+
+// ── venue_seat (물리 좌석: 공연과 무관, 공연장당 1회 정의 후 재사용) ──
+model VenueSeat {
+  id        String    @id @default(cuid())
+  venue     Venue     @relation(fields: [venueId], references: [id])
+  venueId   String
+  floor     String
+  section   String
+  seatRow   String // 'row'는 SQL 예약어 → seatRow
+  seatNo    Int
+  tickets   Ticket[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([venueId, floor, section, seatRow, seatNo])
+  @@map("venue_seats")
+}
+
+// ── concert (공연) ──────────────────────────────────────
+model Concert {
+  id        String    @id @default(cuid())
+  venue     Venue     @relation(fields: [venueId], references: [id])
+  venueId   String
+  name      String
+  artist    String
+  startsAt  DateTime // 공연 일시
+  opensAt   DateTime // 예매 오픈 일시
+  tickets   Ticket[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([opensAt])
+  @@map("concerts")
+}
+
+// ── ticket (공연 × 좌석 = 판매/재고 단위. 오버셀 방지 지점) ──
+// grade·price는 공연별 상품 속성이라 여기 둔다. status 원자적 조건부 UPDATE = 오버셀 2차 방어.
+model Ticket {
+  id           String        @id @default(cuid())
+  concert      Concert       @relation(fields: [concertId], references: [id])
+  concertId    String
+  seat         VenueSeat     @relation(fields: [seatId], references: [id])
+  seatId       String
+  grade        String
+  price        Int // 원(정수). KRW는 소수 없음.
+  status       TicketStatus  @default(AVAILABLE)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+
+  // 한 공연에서 한 좌석은 단 1장 → 구조적 오버셀 차단
+  @@unique([concertId, seatId])
+  @@index([concertId, status])
+  @@map("tickets")
+}
+
+// ── reservation (예매) ──────────────────────────────────
+// 오버셀은 ticket.status로 보장하므로 ticketId 유니크는 두지 않음(취소→재판매 가능).
+model Reservation {
+  id        String            @id @default(cuid())
+  orderNo   String            @unique
+  user      User              @relation(fields: [userId], references: [id])
+  userId    String
+  ticket    Ticket            @relation(fields: [ticketId], references: [id])
+  ticketId  String
+  status    ReservationStatus @default(PENDING)
+  payment   Payment?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([ticketId])
+  @@map("reservations")
+}
+
+// ── payment (결제 기록: payment-service 소유) ───────────
+model Payment {
+  id            String        @id @default(cuid())
+  reservation   Reservation   @relation(fields: [reservationId], references: [id])
+  reservationId String        @unique
+  amount        Int
+  status        PaymentStatus @default(PENDING)
+  provider      String        @default("mock")
+  txId          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+// ── outbox (트랜잭셔널 아웃박스) ────────────────────────
+// 비즈니스 변경과 같은 트랜잭션으로 이벤트를 기록 → 릴레이가 Kafka로 발행.
+// "DB 커밋 ↔ 이벤트 발행" 원자성 보장(dual-write 유실/유령 방지).
+model Outbox {
+  id            String       @id @default(cuid())
+  aggregateType String // 'reservation' 등
+  aggregateId   String
+  eventType     String // 'reservation.requested' 등
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  createdAt     DateTime     @default(now())
+  sentAt        DateTime?
+
+  @@index([status, createdAt])
+  @@map("outbox")
 }
