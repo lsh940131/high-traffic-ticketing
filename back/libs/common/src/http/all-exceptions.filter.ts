@@ -38,9 +38,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
           message = p.message;
         }
       }
-    } else if (exception instanceof Error) {
-      message = exception.message;
     }
+    // 5xx(비-HttpException)는 내부 에러 메시지를 클라이언트에 노출하지 않는다.
+    // (message는 'Internal server error' 유지, 실제 원인은 서버 로그로만)
 
     const body: ApiError = {
       success: false,
@@ -49,7 +49,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     if (status >= 500) {
-      this.logger.error({ err: exception, path: req.originalUrl }, message);
+      const detail = exception instanceof Error ? exception.message : message;
+      this.logger.error({ err: exception, path: req.originalUrl }, detail);
     } else {
       this.logger.warn({ status, path: req.originalUrl }, message);
     }
