@@ -7,7 +7,10 @@ export function setupSwagger(app: INestApplication, serviceName: string): void {
     .setTitle(`${serviceName} API`)
     .setDescription('High-Traffic Ticketing')
     .setVersion('0.1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: { persistAuthorization: true }, // 새로고침해도 Authorize 토큰 유지
+  });
 }
