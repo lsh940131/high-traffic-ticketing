@@ -6,6 +6,7 @@ import { UpstreamService } from './upstream/upstream.service';
 
 /**
  * 단일 진입점. 경로 prefix로 각 서비스에 REST 프록시.
+ *   /auth/*         -> user-service
  *   /queue/*        -> queue-service
  *   /reservations/* -> reservation-service
  *   /events/*       -> reservation-service (event 흡수)
@@ -54,9 +55,11 @@ export class ProxyController {
       url: route.target + req.originalUrl,
       data: req.body,
       headers: {
+        // 로그인 AT 전파 (다운스트림이 JwtAuthGuard로 검증)
+        authorization: req.headers['authorization'],
         'x-user-id': req.headers['x-user-id'],
         'x-entry-token': req.headers['x-entry-token'],
-        // 다운스트림에 요청 상관관계 전파 (게이트웨이가 발급한 id)
+        // 요청 상관관계 전파 (게이트웨이가 발급한 id)
         'x-request-id': (req as Request & { id?: string }).id,
       },
     });
