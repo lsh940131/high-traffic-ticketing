@@ -18,7 +18,8 @@
     "infra:up": "docker compose -f ../infra/docker/docker-compose.yml up -d --wait",
     "infra:down": "docker compose -f ../infra/docker/docker-compose.yml down",
     "dev": "npm run infra:up && npm run start:all",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.2",
@@ -56,6 +57,7 @@
     "dotenv": "^17.4.2",
     "pino-pretty": "^11.3.0",
     "prisma": "^7.8.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.5.0"
   }
 }
