@@ -13,13 +13,7 @@
         "options": { "dtoFileNameSuffix": [".dto.ts", "dto.ts"], "introspectComments": true }
       }
     ],
-    "assets": [
-      {
-        "include": "inventory/lua/*.lua",
-        "outDir": "dist/apps/reservation-service/src",
-        "watchAssets": true
-      }
-    ],
+    "assets": [],
     "watchAssets": true
   },
   "projects": {
