@@ -7,7 +7,7 @@
 ```
 infra/
 ├── docker/                 # 로컬 개발용 (compose 한 큐)
-│   └── docker-compose.yml  # redis + kafka + zookeeper + postgres + grafana
+│   └── docker-compose.yml  # redis + kafka(KRaft) + postgres + minio + prometheus + grafana
 ├── k8s/
 │   ├── base/               # 공통 manifest (back/front/redis/kafka/db)
 │   └── overlays/

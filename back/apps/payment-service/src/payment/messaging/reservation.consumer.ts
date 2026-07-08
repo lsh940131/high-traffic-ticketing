@@ -1,7 +1,7 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Kafka } from 'kafkajs';
 import Redis from 'ioredis';
-import { KAFKA } from '@app/kafka';
+import { KAFKA, ensureTopics } from '@app/kafka';
 import { REDIS } from '@app/redis';
 import { TOPICS, ReservationRequested } from '@app/contracts';
 import { PaymentService } from '../payment.service';
@@ -19,6 +19,8 @@ export class ReservationConsumer implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    // 없는 토픽 subscribe 시 UNKNOWN_TOPIC_OR_PARTITION으로 죽으므로 선제 생성(멱등).
+    await ensureTopics(this.kafka, [TOPICS.RESERVATION_REQUESTED]);
     const consumer = this.kafka.consumer({ groupId: 'payment-workers' });
     await consumer.connect();
     await consumer.subscribe({ topic: TOPICS.RESERVATION_REQUESTED, fromBeginning: false });
