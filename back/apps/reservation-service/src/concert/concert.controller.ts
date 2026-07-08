@@ -1,7 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param } from '@nestjs/common';
+import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConcertService } from './concert.service';
-import { ConcertListItemDto } from './dto';
+import { ConcertDetailDto, ConcertListItemDto } from './dto';
 
 @ApiTags('concerts')
 @Controller('concerts')
@@ -16,5 +16,16 @@ export class ConcertController {
   @ApiOkResponse({ type: [ConcertListItemDto], description: '공연 목록' })
   list() {
     return this.concerts.list();
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: '공연 상세',
+    description: '공연 상세 정보 + 상세 안내 이미지 + 등급별 가격/잔여. 공개 — 로그인 불필요.',
+  })
+  @ApiOkResponse({ type: ConcertDetailDto, description: '공연 상세' })
+  @ApiNotFoundResponse({ description: '해당 공연 없음' })
+  detail(@Param('id') id: string) {
+    return this.concerts.detail(id);
   }
 }
