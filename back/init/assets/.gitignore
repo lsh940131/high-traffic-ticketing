@@ -1,0 +1,6 @@
+# 원본 이미지는 로컬 기초데이터 → 커밋 제외(용량). 구조/README/.gitkeep만 추적.
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
