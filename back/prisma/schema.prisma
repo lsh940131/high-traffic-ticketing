@@ -4,9 +4,16 @@ generator client {
   output       = "../libs/prisma/generated/prisma"
   moduleFormat = "cjs"
 }
+
 datasource db {
   provider = "postgresql"
 }
+
+// PK 전략: UUIDv7(@default(uuid(7))) + 네이티브 uuid 저장(@db.Uuid).
+//  - 시간순 정렬성 → 버스트 insert 시 B-tree 지역성 확보(랜덤 UUIDv4 대비 페이지 분할·단편화↓)
+//  - 추측 불가 → 예매/티켓 ID 열거(enumeration) 방지 (autoincrement의 약점 회피)
+//  - 앱에서 분산 생성(Prisma가 생성), 16바이트 바이너리 저장으로 text ID보다 인덱스 효율↑
+//  FK 컬럼도 참조 PK와 타입을 맞추기 위해 @db.Uuid.
 
 // ── enums ──────────────────────────────────────────────
 enum TicketStatus {
@@ -36,7 +43,7 @@ enum OutboxStatus {
 // ── user ───────────────────────────────────────────────
 // 인증은 짧은 AT(JWT)만. RT 없음. password_hash 저장(평문 X).
 model User {
-  id           String        @id @default(cuid())
+  id           String        @id @default(uuid(7)) @db.Uuid
   name         String
   email        String        @unique
   passwordHash String
@@ -50,7 +57,7 @@ model User {
 
 // ── venue (공연장) ──────────────────────────────────────
 model Venue {
-  id        String      @id @default(cuid())
+  id        String      @id @default(uuid(7)) @db.Uuid
   name      String
   location  String
   seats     VenueSeat[]
@@ -64,9 +71,9 @@ model Venue {
 
 // ── venue_seat (물리 좌석: 공연과 무관, 공연장당 1회 정의 후 재사용) ──
 model VenueSeat {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid(7)) @db.Uuid
   venue     Venue     @relation(fields: [venueId], references: [id])
-  venueId   String
+  venueId   String    @db.Uuid
   floor     String
   section   String
   seatRow   String // 'row'는 SQL 예약어 → seatRow
@@ -82,22 +89,22 @@ model VenueSeat {
 
 // ── concert (공연) ──────────────────────────────────────
 model Concert {
-  id        String    @id @default(cuid())
-  venue     Venue     @relation(fields: [venueId], references: [id])
-  venueId   String
-  name      String
-  artist    String
-  startsAt  DateTime // 공연 시작 일시
-  endsAt    DateTime // 공연 종료 일시. 단일일이면 startsAt와 동일.
-  opensAt   DateTime // 예매 오픈 일시
+  id           String    @id @default(uuid(7)) @db.Uuid
+  venue        Venue     @relation(fields: [venueId], references: [id])
+  venueId      String    @db.Uuid
+  name         String
+  artist       String
+  startsAt     DateTime // 공연 시작 일시
+  endsAt       DateTime // 공연 종료 일시. 단일일이면 startsAt와 동일.
+  opensAt      DateTime // 예매 오픈 일시
   posterUrl    String? // 포스터 이미지 URL (GIF/JPG 등)
-  detailImages String[] @default([]) // 상세 안내 이미지 URL들(세로 긴 이미지, 1장 이상)
+  detailImages String[]  @default([]) // 상세 안내 이미지 URL들(세로 긴 이미지, 1장 이상)
   ageLimit     String? // 관람연령 (예: 만 7세 이상)
   notice       String? // 유의사항
-  tickets   Ticket[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  tickets      Ticket[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
 
   @@index([opensAt])
   @@map("concerts")
@@ -106,11 +113,11 @@ model Concert {
 // ── ticket (공연 × 좌석 = 판매/재고 단위. 오버셀 방지 지점) ──
 // grade·price는 공연별 상품 속성이라 여기 둔다. status 원자적 조건부 UPDATE = 오버셀 2차 방어.
 model Ticket {
-  id           String        @id @default(cuid())
+  id           String        @id @default(uuid(7)) @db.Uuid
   concert      Concert       @relation(fields: [concertId], references: [id])
-  concertId    String
+  concertId    String        @db.Uuid
   seat         VenueSeat     @relation(fields: [seatId], references: [id])
-  seatId       String
+  seatId       String        @db.Uuid
   grade        String
   price        Int // 원(정수). KRW는 소수 없음.
   status       TicketStatus  @default(AVAILABLE)
@@ -128,12 +135,12 @@ model Ticket {
 // ── reservation (예매) ──────────────────────────────────
 // 오버셀은 ticket.status로 보장하므로 ticketId 유니크는 두지 않음(취소→재판매 가능).
 model Reservation {
-  id        String            @id @default(cuid())
+  id        String            @id @default(uuid(7)) @db.Uuid
   orderNo   String            @unique
   user      User              @relation(fields: [userId], references: [id])
-  userId    String
+  userId    String            @db.Uuid
   ticket    Ticket            @relation(fields: [ticketId], references: [id])
-  ticketId  String
+  ticketId  String            @db.Uuid
   status    ReservationStatus @default(PENDING)
   payment   Payment?
   createdAt DateTime          @default(now())
@@ -147,9 +154,9 @@ model Reservation {
 
 // ── payment (결제 기록: payment-service 소유) ───────────
 model Payment {
-  id            String        @id @default(cuid())
+  id            String        @id @default(uuid(7)) @db.Uuid
   reservation   Reservation   @relation(fields: [reservationId], references: [id])
-  reservationId String        @unique
+  reservationId String        @unique @db.Uuid
   amount        Int
   status        PaymentStatus @default(PENDING)
   provider      String        @default("mock")
@@ -164,9 +171,9 @@ model Payment {
 // 비즈니스 변경과 같은 트랜잭션으로 이벤트를 기록 → 릴레이가 Kafka로 발행.
 // "DB 커밋 ↔ 이벤트 발행" 원자성 보장(dual-write 유실/유령 방지).
 model Outbox {
-  id            String       @id @default(cuid())
+  id            String       @id @default(uuid(7)) @db.Uuid
   aggregateType String // 'reservation' 등
-  aggregateId   String
+  aggregateId   String       @db.Uuid // 대상 애그리거트 PK(uuid)
   eventType     String // 'reservation.requested' 등
   payload       Json
   status        OutboxStatus @default(PENDING)
