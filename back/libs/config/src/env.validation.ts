@@ -1,5 +1,13 @@
 import { plainToInstance, Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min, validateSync } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  validateSync,
+} from 'class-validator';
 
 /**
  * 환경변수 스키마. 부팅 시 검증(fail-fast) + 타입 접근의 단일 소스.
@@ -37,6 +45,13 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   QUEUE_SLOT_TTL_SEC: number = 180;
+
+  // mock 결제 실패율(0~1). 기본 0.1 = 10% 실패(대표 실패코드 랜덤). 0이면 항상 승인.
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @Min(0)
+  PAYMENT_FAIL_RATE: number = 0.1;
 
   // ── gateway 전용 업스트림 (다른 서비스엔 없음 → 선택) ──
   @IsOptional() @IsString() QUEUE_URL?: string;
