@@ -30,6 +30,7 @@ export class ProxyController {
       { prefix: '/auth', target: userUrl },
       { prefix: '/queue', target: queueUrl },
       { prefix: '/reservations', target: reservationUrl },
+      { prefix: '/orders', target: reservationUrl },
       { prefix: '/concerts', target: reservationUrl },
       { prefix: '/events', target: reservationUrl },
     ];
@@ -44,6 +45,8 @@ export class ProxyController {
     'queue/*',
     'reservations',
     'reservations/*',
+    'orders',
+    'orders/*',
     'concerts',
     'concerts/*',
     'events',
