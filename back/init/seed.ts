@@ -184,6 +184,8 @@ async function main() {
           endsAt: startsAt, // 단일일 (시작일 = 종료일)
           posterUrl,
           detailImages,
+          ageLimit: '만 7세 이상', // 데모 기본값
+          notice: '무통장입금 결제 불가 · 예매 취소/환불은 관람일 기준 규정에 따릅니다.', // 데모 기본값
         },
       });
       concertIdx++;
