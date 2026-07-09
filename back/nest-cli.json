@@ -13,7 +13,13 @@
         "options": { "dtoFileNameSuffix": [".dto.ts", "dto.ts"], "introspectComments": true }
       }
     ],
-    "assets": [],
+    "assets": [
+      {
+        "include": "queue/lua/*.lua",
+        "outDir": "dist/apps/queue-service/src",
+        "watchAssets": true
+      }
+    ],
     "watchAssets": true
   },
   "projects": {

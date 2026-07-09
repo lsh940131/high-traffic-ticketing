@@ -31,6 +31,13 @@ export class EnvironmentVariables {
   @Min(1)
   QUEUE_ACTIVE_CAPACITY: number = 2000;
 
+  // 부킹존 슬롯 점유 시간(=입장토큰 TTL). 미입장 시 이 시간 후 슬롯 회수 → 재대기.
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @IsInt()
+  @Min(1)
+  QUEUE_SLOT_TTL_SEC: number = 180;
+
   // ── gateway 전용 업스트림 (다른 서비스엔 없음 → 선택) ──
   @IsOptional() @IsString() QUEUE_URL?: string;
   @IsOptional() @IsString() RESERVATION_URL?: string;
