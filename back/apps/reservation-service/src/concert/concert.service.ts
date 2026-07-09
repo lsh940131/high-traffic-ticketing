@@ -1,13 +1,33 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import Redis from 'ioredis';
+import { REDIS } from '@app/redis';
 import { PrismaService, TicketStatus } from '@app/prisma';
-import { ConcertDetailDto, ConcertGradeDto, ConcertListItemDto } from './dto';
+import {
+  BlockSeatsDto,
+  ConcertDetailDto,
+  ConcertGradeDto,
+  ConcertListItemDto,
+  SeatBlockDto,
+  SeatDto,
+  SeatMapDto,
+} from './dto';
 
-const GRADE_RANK: Record<string, number> = { VIP: 0, R: 1, S: 2 };
+// 등급 표시 순서 (스탠딩 > R > S > A)
+const GRADE_RANK: Record<string, number> = { STANDING: 0, R: 1, S: 2, A: 3 };
+// 블록 정렬용 층 순서 (스탠딩 먼저 → 1층 → 2층 → 3층)
+const FLOOR_RANK: Record<string, number> = { FLOOR: 0, '1F': 1, '2F': 2, '3F': 3 };
+const STANDING_FLOOR = 'FLOOR';
 
-/** 공연 카탈로그 읽기(홈 목록·상세). reservation-service 소유. */
+/** 공연 카탈로그 읽기(목록·상세·좌석맵). reservation-service 소유. */
 @Injectable()
 export class ConcertService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(REDIS) private readonly redis: Redis,
+  ) {}
+
+  // Redis 임시 점유(HELD): ZSET member=seatId, score=만료 ms. hold API가 여기에 쓴다.
+  private holdsKey = (concertId: string) => `holds:${concertId}`;
 
   /** 홈 공연 목록. 공연장명 + 최저가 + 잔여좌석 집계 포함. */
   async list(): Promise<ConcertListItemDto[]> {
@@ -60,7 +80,6 @@ export class ConcertService {
     });
     if (!c) throw new NotFoundException('공연을 찾을 수 없습니다.');
 
-    // 등급별 가격(등급 내 동일)·전체 수, 그리고 잔여(AVAILABLE) 수를 각각 집계
     const [byGrade, availByGrade] = await Promise.all([
       this.prisma.ticket.groupBy({
         by: ['grade'],
@@ -103,6 +122,117 @@ export class ConcertService {
       grades,
       remaining,
       soldOut: remaining === 0,
+    };
+  }
+
+  /**
+   * 좌석맵 요약(진입 1회). 블록(section)별 잔여 + 등급 요약.
+   * FLOOR 스탠딩 블록은 standing=true(그리드 없이 수량). 개별 좌석은 blockSeats로 on-demand.
+   */
+  async seatmap(concertId: string): Promise<SeatMapDto> {
+    const concert = await this.prisma.concert.findFirst({
+      where: { id: concertId, deletedAt: null },
+      include: { venue: { select: { name: true } } },
+    });
+    if (!concert) throw new NotFoundException('공연을 찾을 수 없습니다.');
+
+    const [tickets, held] = await Promise.all([
+      this.prisma.ticket.findMany({
+        where: { concertId, deletedAt: null },
+        include: { seat: { select: { floor: true, section: true } } },
+      }),
+      this.redis.zrangebyscore(this.holdsKey(concertId), Date.now(), '+inf'),
+    ]);
+    const heldSet = new Set(held);
+
+    const blockMap = new Map<string, SeatBlockDto>();
+    const gradeMap = new Map<string, ConcertGradeDto>();
+    for (const t of tickets) {
+      const { floor, section } = t.seat;
+      const available = t.status !== TicketStatus.SOLD && !heldSet.has(t.seatId);
+
+      const b =
+        blockMap.get(section) ??
+        ({
+          blockId: section,
+          floor,
+          grade: t.grade,
+          price: t.price,
+          total: 0,
+          remaining: 0,
+          standing: floor === STANDING_FLOOR,
+        } as SeatBlockDto);
+      b.total += 1;
+      if (available) b.remaining += 1;
+      blockMap.set(section, b);
+
+      const g = gradeMap.get(t.grade) ?? { grade: t.grade, price: t.price, total: 0, remaining: 0 };
+      g.total += 1;
+      if (available) g.remaining += 1;
+      gradeMap.set(t.grade, g);
+    }
+
+    const blocks = [...blockMap.values()].sort(
+      (a, b) =>
+        (FLOOR_RANK[a.floor] ?? 9) - (FLOOR_RANK[b.floor] ?? 9) ||
+        a.blockId.localeCompare(b.blockId),
+    );
+    const grades = [...gradeMap.values()].sort(
+      (a, b) => (GRADE_RANK[a.grade] ?? 99) - (GRADE_RANK[b.grade] ?? 99),
+    );
+    return { concertId, venueName: concert.venue.name, blocks, grades };
+  }
+
+  /** 블록 좌석(블록 클릭 시). 그 블록 좌석 + 실시간 상태(DB+Redis 병합). */
+  async blockSeats(concertId: string, blockId: string): Promise<BlockSeatsDto> {
+    if (!blockId) throw new BadRequestException('block 파라미터가 필요합니다. 예: 103');
+
+    const exists = await this.prisma.concert.findFirst({
+      where: { id: concertId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundException('공연을 찾을 수 없습니다.');
+
+    const [tickets, held] = await Promise.all([
+      this.prisma.ticket.findMany({
+        where: { concertId, deletedAt: null, seat: { section: blockId } },
+        include: {
+          seat: { select: { floor: true, section: true, seatRow: true, seatNo: true } },
+        },
+      }),
+      this.redis.zrangebyscore(this.holdsKey(concertId), Date.now(), '+inf'),
+    ]);
+    if (tickets.length === 0) throw new NotFoundException('해당 블록을 찾을 수 없습니다.');
+    const heldSet = new Set(held);
+
+    const seats: SeatDto[] = tickets
+      .map((t) => ({
+        ticketId: t.id,
+        seatId: t.seatId,
+        floor: t.seat.floor,
+        section: t.seat.section,
+        row: t.seat.seatRow,
+        seatNo: t.seat.seatNo,
+        grade: t.grade,
+        price: t.price,
+        status: (t.status === TicketStatus.SOLD
+          ? 'SOLD'
+          : heldSet.has(t.seatId)
+            ? 'HELD'
+            : 'AVAILABLE') as SeatDto['status'],
+      }))
+      .sort((a, b) => Number(a.row) - Number(b.row) || a.seatNo - b.seatNo);
+
+    const remaining = seats.filter((s) => s.status === 'AVAILABLE').length;
+    return {
+      concertId,
+      blockId,
+      grade: seats[0].grade,
+      price: seats[0].price,
+      total: seats.length,
+      remaining,
+      standing: seats[0].floor === STANDING_FLOOR,
+      seats,
     };
   }
 }
