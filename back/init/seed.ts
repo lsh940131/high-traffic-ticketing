@@ -6,12 +6,13 @@ import { uploadConcertImages } from './minio';
 
 /**
  * 개발용 시드 (초기화).
- *  - 공연장(venue) 2곳 + 물리 좌석(venue_seat)
- *  - 공연(concert) 10개 (좌석은 공연장 것을 재사용)
- *  - 각 공연 이미지(poster/detail)를 MinIO에 업로드 → posterUrl/detailImages 저장
- *  - 티켓(ticket) = 공연 x 좌석, 전부 AVAILABLE. 가격은 "공연 x 등급"별.
- *  - 시드 유저 몇 명 (인증 도입 전까지 userId 소스)
- * 멱등: 재실행 시 관련 테이블을 FK 순서로 비우고 다시 넣는다. 이미지도 같은 키로 덮어씀.
+ *  - 공연장(venue) 2곳 + 물리 좌석(venue_seat) — 좌석선택 UI 레이아웃(공통):
+ *      FLOOR 스탠딩(좌석X, 수량만) + 1층 R(블록 101~106) + 2층 S(201~208) + 3층 A(301~308)
+ *      각 블록 5열 x 12석 = 60석. section 필드에 블록번호("103") 또는 "STANDING" 저장.
+ *  - 공연(concert) 10개 + 이미지(MinIO) → posterUrl/detailImages
+ *  - 티켓(ticket) = 공연 x 좌석. 스탠딩은 N개의 수량 단위 티켓(오버셀 방어 모델 유지).
+ *  - 시드 유저 몇 명
+ * 멱등: 재실행 시 관련 테이블을 FK 순서로 비우고 다시 넣는다.
  * 선행조건: infra(postgres+minio) 기동. `npm run seed`.
  */
 
@@ -21,18 +22,28 @@ const prisma = new PrismaClient({
 
 const ASSETS_DIR = join(__dirname, 'assets');
 
-// 좌석 레이아웃 (튜너블): 3층 x 2구역 x 10열 x 12석 = 720석/공연장
-const FLOORS = [1, 2, 3];
-const SECTIONS = ['A', 'B'];
-const ROWS = 10;
+// ── 좌석 레이아웃 (공연장 공통, 좌석선택 목업 기준) ──
+const STANDING_CAPACITY = 500; // FLOOR 스탠딩 총 매수
+const ROWS_PER_BLOCK = 5;
 const SEATS_PER_ROW = 12;
 
-type Grade = 'VIP' | 'R' | 'S';
+type Grade = 'STANDING' | 'R' | 'S' | 'A';
 type Prices = Record<Grade, number>;
 
-const GRADE_BY_FLOOR: Record<number, Grade> = { 1: 'VIP', 2: 'R', 3: 'S' };
+// 층별 등급 + 블록 번호
+const SEATED_FLOORS: { floor: string; grade: Grade; blocks: string[] }[] = [
+  { floor: '1F', grade: 'R', blocks: ['101', '102', '103', '104', '105', '106'] },
+  { floor: '2F', grade: 'S', blocks: ['201', '202', '203', '204', '205', '206', '207', '208'] },
+  { floor: '3F', grade: 'A', blocks: ['301', '302', '303', '304', '305', '306', '307', '308'] },
+];
 
-function seatRows(venueId: string) {
+// 좌석 등급: FLOOR=스탠딩, 그 외 층별 등급
+function gradeOfFloor(floor: string): Grade {
+  return SEATED_FLOORS.find((f) => f.floor === floor)?.grade ?? 'STANDING';
+}
+
+// 공연장 물리 좌석 생성
+function venueSeatRows(venueId: string) {
   const rows: {
     venueId: string;
     floor: string;
@@ -40,11 +51,16 @@ function seatRows(venueId: string) {
     seatRow: string;
     seatNo: number;
   }[] = [];
-  for (const floor of FLOORS) {
-    for (const section of SECTIONS) {
-      for (let r = 1; r <= ROWS; r++) {
-        for (let n = 1; n <= SEATS_PER_ROW; n++) {
-          rows.push({ venueId, floor: `${floor}F`, section, seatRow: String(r), seatNo: n });
+  // FLOOR 스탠딩: 좌석 그리드 없이 수량만 → 내부적으로 N개의 스탠딩 단위
+  for (let n = 1; n <= STANDING_CAPACITY; n++) {
+    rows.push({ venueId, floor: 'FLOOR', section: 'STANDING', seatRow: 'S', seatNo: n });
+  }
+  // 층 → 블록 → 열 → 번호
+  for (const f of SEATED_FLOORS) {
+    for (const block of f.blocks) {
+      for (let r = 1; r <= ROWS_PER_BLOCK; r++) {
+        for (let s = 1; s <= SEATS_PER_ROW; s++) {
+          rows.push({ venueId, floor: f.floor, section: block, seatRow: String(r), seatNo: s });
         }
       }
     }
@@ -55,6 +71,7 @@ function seatRows(venueId: string) {
 const days = (n: number) => new Date(Date.now() + n * 24 * 60 * 60 * 1000);
 
 // slug: MinIO 키/URL용 ascii. assetKey: init/assets 로컬 파일명 접두어(한글 그대로).
+// prices: 4등급(STANDING > R > S > A).
 const VENUES: {
   name: string;
   location: string;
@@ -69,35 +86,35 @@ const VENUES: {
         artist: '실리카겔',
         slug: 'silicagel',
         assetKey: '실리카겔',
-        prices: { VIP: 220000, R: 170000, S: 120000 },
+        prices: { STANDING: 154000, R: 143000, S: 132000, A: 110000 },
       },
       {
         name: '쏜애플 단독공연',
         artist: '쏜애플',
         slug: 'thornapple',
         assetKey: '쏜애플',
-        prices: { VIP: 150000, R: 120000, S: 90000 },
+        prices: { STANDING: 130000, R: 120000, S: 108000, A: 90000 },
       },
       {
         name: '너드커넥션 단독공연',
         artist: '너드커넥션',
         slug: 'nerdconnection',
         assetKey: '너드커넥션',
-        prices: { VIP: 180000, R: 140000, S: 100000 },
+        prices: { STANDING: 140000, R: 128000, S: 115000, A: 99000 },
       },
       {
         name: '터치드 단독공연',
         artist: '터치드',
         slug: 'touched',
         assetKey: '터치드',
-        prices: { VIP: 200000, R: 160000, S: 110000 },
+        prices: { STANDING: 120000, R: 110000, S: 98000, A: 85000 },
       },
       {
         name: '레이니 단독공연',
         artist: '레이니',
         slug: 'rainey',
         assetKey: '레이니',
-        prices: { VIP: 250000, R: 190000, S: 130000 },
+        prices: { STANDING: 150000, R: 138000, S: 124000, A: 105000 },
       },
     ],
   },
@@ -110,35 +127,35 @@ const VENUES: {
         artist: '김종국',
         slug: 'kimjongkook',
         assetKey: '김종국',
-        prices: { VIP: 280000, R: 210000, S: 140000 },
+        prices: { STANDING: 165000, R: 150000, S: 135000, A: 115000 },
       },
       {
         name: 'FT아일랜드 단독공연',
         artist: 'FT아일랜드',
         slug: 'ftisland',
         assetKey: 'ft아일랜드',
-        prices: { VIP: 170000, R: 130000, S: 95000 },
+        prices: { STANDING: 145000, R: 133000, S: 120000, A: 100000 },
       },
       {
         name: 'B1A4 단독공연',
         artist: 'B1A4',
         slug: 'b1a4',
         assetKey: 'b1a4',
-        prices: { VIP: 260000, R: 200000, S: 140000 },
+        prices: { STANDING: 150000, R: 138000, S: 124000, A: 105000 },
       },
       {
         name: '제이슨 므라즈 내한공연',
         artist: '제이슨 므라즈',
         slug: 'jasonmraz',
         assetKey: '제이슨므라즈',
-        prices: { VIP: 140000, R: 110000, S: 85000 },
+        prices: { STANDING: 135000, R: 123000, S: 110000, A: 92000 },
       },
       {
         name: '장경민 단독공연',
         artist: '장경민',
         slug: 'jangkyungmin',
         assetKey: '장경민',
-        prices: { VIP: 160000, R: 130000, S: 100000 },
+        prices: { STANDING: 128000, R: 118000, S: 104000, A: 88000 },
       },
     ],
   },
@@ -166,11 +183,10 @@ async function main() {
   for (const v of VENUES) {
     const venue = await prisma.venue.create({ data: { name: v.name, location: v.location } });
 
-    await prisma.venueSeat.createMany({ data: seatRows(venue.id) });
+    await prisma.venueSeat.createMany({ data: venueSeatRows(venue.id) });
     const seats = await prisma.venueSeat.findMany({ where: { venueId: venue.id } });
 
     for (const c of v.concerts) {
-      // 이미지 업로드 → URL 확보 후 공연 생성
       const { posterUrl, detailImages } = await uploadConcertImages(ASSETS_DIR, c.slug, c.assetKey);
 
       const startsAt = days(14 + concertIdx * 5);
@@ -191,7 +207,7 @@ async function main() {
       concertIdx++;
 
       const tickets = seats.map((s) => {
-        const grade = GRADE_BY_FLOOR[Number(s.floor.replace('F', ''))] ?? 'S';
+        const grade = gradeOfFloor(s.floor);
         return {
           concertId: concert.id,
           seatId: s.id,
@@ -203,7 +219,7 @@ async function main() {
       await prisma.ticket.createMany({ data: tickets });
 
       console.log(
-        `  ${venue.name} · ${concert.name} (${c.artist}): 티켓 ${tickets.length}장, 상세 ${detailImages.length}장`,
+        `  ${venue.name} · ${concert.name} (${c.artist}): 티켓 ${tickets.length}장 (스탠딩 ${STANDING_CAPACITY} 포함), 상세 ${detailImages.length}장`,
       );
     }
   }
