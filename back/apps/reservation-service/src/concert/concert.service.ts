@@ -183,6 +183,42 @@ export class ConcertService {
     return { concertId, venueName: concert.venue.name, blocks, grades };
   }
 
+  /** 스탠딩 수량 요약(좌석 그리드 없음). total/remaining만. */
+  private async standingSummary(concertId: string): Promise<BlockSeatsDto> {
+    const held = await this.redis.zrangebyscore(this.holdsKey(concertId), Date.now(), '+inf');
+    const [sample, total, sold, heldStanding] = await Promise.all([
+      this.prisma.ticket.findFirst({
+        where: { concertId, grade: 'STANDING' },
+        select: { price: true },
+      }),
+      this.prisma.ticket.count({ where: { concertId, grade: 'STANDING' } }),
+      this.prisma.ticket.count({
+        where: { concertId, grade: 'STANDING', status: TicketStatus.SOLD },
+      }),
+      held.length
+        ? this.prisma.ticket.count({
+            where: {
+              concertId,
+              grade: 'STANDING',
+              seatId: { in: held },
+              status: { not: TicketStatus.SOLD },
+            },
+          })
+        : Promise.resolve(0),
+    ]);
+    if (!sample) throw new NotFoundException('해당 블록을 찾을 수 없습니다.');
+    return {
+      concertId,
+      blockId: 'STANDING',
+      grade: 'STANDING',
+      price: sample.price,
+      total,
+      remaining: total - sold - heldStanding,
+      standing: true,
+      seats: [],
+    };
+  }
+
   /** 블록 좌석(블록 클릭 시). 그 블록 좌석 + 실시간 상태(DB+Redis 병합). */
   async blockSeats(concertId: string, blockId: string): Promise<BlockSeatsDto> {
     if (!blockId) throw new BadRequestException('block 파라미터가 필요합니다. 예: 103');
@@ -192,6 +228,9 @@ export class ConcertService {
       select: { id: true },
     });
     if (!exists) throw new NotFoundException('공연을 찾을 수 없습니다.');
+
+    // 스탠딩 블록은 좌석 그리드가 없다(수량 예매). 1000행 반환 대신 수량 요약만.
+    if (blockId === 'STANDING') return this.standingSummary(concertId);
 
     const [tickets, held] = await Promise.all([
       this.prisma.ticket.findMany({

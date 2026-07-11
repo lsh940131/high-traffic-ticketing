@@ -23,7 +23,7 @@ const prisma = new PrismaClient({
 const ASSETS_DIR = join(__dirname, 'assets');
 
 // ── 좌석 레이아웃 (공연장 공통, 좌석선택 목업 기준) ──
-const STANDING_CAPACITY = 500; // FLOOR 스탠딩 총 매수
+const STANDING_CAPACITY = 1000; // FLOOR 스탠딩 총 매수
 const ROWS_PER_BLOCK = 5;
 const SEATS_PER_ROW = 12;
 

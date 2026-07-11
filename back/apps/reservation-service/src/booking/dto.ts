@@ -1,5 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayNotEmpty, IsArray, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 /** 좌석 선점/예매 요청. 1인 최대 2매. */
 export class TicketsRequestDto {
@@ -13,6 +22,23 @@ export class TicketsRequestDto {
   @ArrayMaxSize(2, { message: '1인 최대 2매까지 선택할 수 있습니다.' })
   @IsUUID('all', { each: true, message: '유효하지 않은 티켓 ID입니다.' })
   ticketIds!: string[];
+}
+
+/** 선점 요청: 좌석(ticketIds) 또는 스탠딩 수량(standingQty) 중 하나. */
+export class HoldRequestDto {
+  @ApiPropertyOptional({ type: [String], description: '좌석 티켓 ID(1~2). 좌석 예매 시.' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(2, { message: '1인 최대 2매까지 선택할 수 있습니다.' })
+  @IsUUID('all', { each: true, message: '유효하지 않은 티켓 ID입니다.' })
+  ticketIds?: string[];
+
+  @ApiPropertyOptional({ description: '스탠딩 수량(1~2). 스탠딩 예매 시.', example: 2 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(2, { message: '1인 최대 2매까지 예매할 수 있습니다.' })
+  standingQty?: number;
 }
 
 /** 선점 결과. 만료까지 카운트다운. */

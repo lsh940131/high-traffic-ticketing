@@ -62,8 +62,29 @@ export class BookingService implements OnModuleInit {
     return tickets;
   }
 
+  /** 선점 진입점: 좌석(ticketIds) 또는 스탠딩 수량(standingQty) 중 하나. */
+  async hold(
+    concertId: string,
+    userId: string,
+    dto: { ticketIds?: string[]; standingQty?: number },
+  ): Promise<HoldResultDto> {
+    const hasSeats = (dto.ticketIds?.length ?? 0) > 0;
+    const hasQty = !!dto.standingQty;
+    if (hasSeats === hasQty)
+      throw new BadRequestException(
+        '좌석(ticketIds) 또는 스탠딩 수량(standingQty) 중 하나만 지정하세요.',
+      );
+    return hasQty
+      ? this.holdStanding(concertId, userId, dto.standingQty as number)
+      : this.holdSeats(concertId, userId, dto.ticketIds as string[]);
+  }
+
   /** 좌석 원자 선점(Redis). 오버셀 1차 방어. */
-  async hold(concertId: string, userId: string, ticketIds: string[]): Promise<HoldResultDto> {
+  private async holdSeats(
+    concertId: string,
+    userId: string,
+    ticketIds: string[],
+  ): Promise<HoldResultDto> {
     const tickets = await this.loadTickets(concertId, ticketIds);
 
     const owned = await this.ownedCount(userId, concertId);
@@ -85,6 +106,57 @@ export class BookingService implements OnModuleInit {
       expiresAt: new Date(expiry).toISOString(),
       holdSeconds: this.ttlSec,
     };
+  }
+
+  /**
+   * 스탠딩 수량 선점. FLOOR 스탠딩 풀에서 AVAILABLE(미HELD) N개를 골라 원자 선점.
+   * 스탠딩 티켓은 교환 가능(자리 무의미)이라 임의 N개면 됨. 경쟁 실패 시 다른 후보로 재시도.
+   */
+  private async holdStanding(
+    concertId: string,
+    userId: string,
+    qty: number,
+  ): Promise<HoldResultDto> {
+    if (qty > MAX_PER_CONCERT)
+      throw new BadRequestException(`1인 최대 ${MAX_PER_CONCERT}매까지 예매할 수 있습니다.`);
+    const owned = await this.ownedCount(userId, concertId);
+    if (owned + qty > MAX_PER_CONCERT)
+      throw new BadRequestException(`1인 최대 ${MAX_PER_CONCERT}매까지 예매할 수 있습니다.`);
+
+    const held = new Set(
+      await this.redis.zrangebyscore(this.holdsKey(concertId), Date.now(), '+inf'),
+    );
+    const candidates = await this.prisma.ticket.findMany({
+      where: { concertId, grade: 'STANDING', status: TicketStatus.AVAILABLE, deletedAt: null },
+      select: { id: true, seatId: true, price: true },
+      take: qty + 30,
+    });
+    const free = candidates.filter((c) => !held.has(c.seatId));
+    if (free.length < qty) throw new ConflictException('스탠딩이 매진되었습니다.');
+
+    for (let i = 0; i + qty <= free.length && i < qty * 4; i += qty) {
+      const pick = free.slice(i, i + qty);
+      const now = Date.now();
+      const expiry = now + this.ttlSec * 1000;
+      const ok = await this.runHold(
+        concertId,
+        userId,
+        now,
+        expiry,
+        pick.map((p) => p.seatId),
+      );
+      if (ok === 1) {
+        return {
+          concertId,
+          ticketIds: pick.map((p) => p.id),
+          seatIds: pick.map((p) => p.seatId),
+          amount: pick.reduce((s, p) => s + p.price, 0),
+          expiresAt: new Date(expiry).toISOString(),
+          holdSeconds: this.ttlSec,
+        };
+      }
+    }
+    throw new ConflictException('스탠딩 예매가 혼잡합니다. 잠시 후 다시 시도해주세요.');
   }
 
   /** 좌석 선점 해제(선택 취소). 내 소유 hold만 즉시 반환(TTL 대기 X). */

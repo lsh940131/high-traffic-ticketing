@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '
 import type { Request } from 'express';
 import { AuthUser, CurrentUser, EntryTokenGuard, JwtAuthGuard } from '@app/common';
 import { BookingService } from './booking.service';
-import { HoldResultDto, OrderResultDto, TicketsRequestDto } from './dto';
+import { HoldRequestDto, HoldResultDto, OrderResultDto, TicketsRequestDto } from './dto';
 
 // 입장토큰 payload에서 concertId를 꺼낸다(대기열 통과한 그 공연으로 고정).
 function concertOf(req: Request): string {
@@ -26,8 +26,8 @@ export class BookingController {
     description: '선택 좌석을 Redis에 원자적으로 선점(TTL). 1인 최대 2매. 대기열 입장 토큰 필요.',
   })
   @ApiOkResponse({ type: HoldResultDto })
-  hold(@Body() dto: TicketsRequestDto, @CurrentUser() user: AuthUser, @Req() req: Request) {
-    return this.booking.hold(concertOf(req), user.userId, dto.ticketIds);
+  hold(@Body() dto: HoldRequestDto, @CurrentUser() user: AuthUser, @Req() req: Request) {
+    return this.booking.hold(concertOf(req), user.userId, dto);
   }
 
   @Post('hold/release')
