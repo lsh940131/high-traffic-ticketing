@@ -1,6 +1,8 @@
 # 로컬 개발용 의존 인프라 한 큐 기동
 # 모든 상태 저장소에 healthcheck를 걸어, `docker compose up -d --wait` 로
 # 전부 healthy 해진 뒤에 앱 서비스를 붙일 수 있게 한다.
+name: high-traffic-ticketing
+
 services:
   redis:
     image: redis:7-alpine
