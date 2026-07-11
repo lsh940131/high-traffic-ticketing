@@ -162,9 +162,11 @@ const VENUES: {
 ];
 
 async function main() {
+  // FK 순서로 삭제: payment/reservation → order → ticket → venueSeat/concert → venue/user
   await prisma.payment.deleteMany();
-  await prisma.outbox.deleteMany();
   await prisma.reservation.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.outbox.deleteMany();
   await prisma.ticket.deleteMany();
   await prisma.venueSeat.deleteMany();
   await prisma.concert.deleteMany();
