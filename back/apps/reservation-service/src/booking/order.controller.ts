@@ -46,4 +46,15 @@ export class OrderController {
   retry(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.booking.retryPayment(id, user.userId);
   }
+
+  @Post(':id/cancel')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '예매 취소',
+    description: '확정된 주문을 관람 전 취소. 좌석 복원(SOLD→AVAILABLE) + 환불 기록.',
+  })
+  @ApiOkResponse({ type: OrderViewDto })
+  cancel(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.booking.cancelOrder(id, user.userId);
+  }
 }

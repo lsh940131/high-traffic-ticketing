@@ -32,6 +32,7 @@ enum PaymentStatus {
   PENDING
   APPROVED
   FAILED
+  REFUNDED
 }
 
 enum OutboxStatus {
@@ -175,8 +176,9 @@ model Payment {
   status    PaymentStatus @default(PENDING)
   provider  String        @default("mock")
   txId      String?
-  failCode  String? // 실패 사유 코드(PaymentFailCode)
-  createdAt DateTime      @default(now())
+  failCode   String? // 실패 사유 코드(PaymentFailCode)
+  refundedAt DateTime? // 환불 처리 시각(취소 시)
+  createdAt  DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   @@map("payments")

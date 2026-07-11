@@ -12,7 +12,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { REDIS } from '@app/redis';
 import { EnvironmentVariables } from '@app/config';
-import { PrismaService, OrderStatus, TicketStatus } from '@app/prisma';
+import { PrismaService, OrderStatus, PaymentStatus, TicketStatus } from '@app/prisma';
 import { PAYMENT_FAIL_MESSAGES, PaymentFailCode, TOPICS } from '@app/contracts';
 import { HoldResultDto, OrderResultDto, OrderViewDto } from './dto';
 
@@ -194,6 +194,43 @@ export class BookingService implements OnModuleInit {
       status: OrderStatus.PENDING,
       ticketIds,
     };
+  }
+
+  /**
+   * 예매 취소/환불. CONFIRMED + 관람 전만.
+   * $transaction: Ticket SOLD→AVAILABLE(재고 복원) + Order CANCELLED + Payment REFUNDED.
+   * (CANCELLED는 1인 2매 카운트에서 제외되므로 재구매 가능)
+   */
+  async cancelOrder(orderId: string, userId: string): Promise<OrderViewDto> {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, userId, deletedAt: null },
+      include: {
+        concert: { select: { startsAt: true } },
+        payment: { select: { id: true } },
+        items: { select: { ticketId: true } },
+      },
+    });
+    if (!order) throw new NotFoundException('주문을 찾을 수 없습니다.');
+    if (order.status !== OrderStatus.CONFIRMED)
+      throw new BadRequestException('확정된 주문만 취소할 수 있습니다.');
+    if (order.concert.startsAt <= new Date())
+      throw new BadRequestException('이미 시작된 공연은 취소할 수 없습니다.');
+
+    const ticketIds = order.items.map((i) => i.ticketId);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.ticket.updateMany({
+        where: { id: { in: ticketIds }, status: TicketStatus.SOLD },
+        data: { status: TicketStatus.AVAILABLE },
+      });
+      await tx.order.update({ where: { id: orderId }, data: { status: OrderStatus.CANCELLED } });
+      if (order.payment) {
+        await tx.payment.update({
+          where: { orderId },
+          data: { status: PaymentStatus.REFUNDED, refundedAt: new Date() },
+        });
+      }
+    });
+    return this.getOrder(orderId, userId);
   }
 
   /** 주문 조회(상태 폴링·마이페이지). 소유자만. */

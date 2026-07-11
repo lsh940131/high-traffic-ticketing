@@ -101,8 +101,13 @@ async function main() {
     console.log(`   재시도 결과: ${o.status}${o.failReason ? ' · ' + o.failReason : ''}`);
   }
 
-  if (o.status === 'CONFIRMED') console.log('✅ 예매 사이클 성공');
-  else console.log(`⚠️ 최종 상태: ${o.status}${o.failReason ? ' · ' + o.failReason : ''}`);
+  if (o.status === 'CONFIRMED') {
+    console.log('✅ 예매 사이클 성공');
+    const cancelled = await api('POST', `/orders/${order.orderId}/cancel`, { token: at });
+    console.log(`8) 취소/환불: 주문 ${cancelled.status} · 결제 ${cancelled.paymentStatus}`);
+  }
+  if (o.status !== 'CONFIRMED')
+    console.log(`⚠️ 최종 상태: ${o.status}${o.failReason ? ' · ' + o.failReason : ''}`);
 }
 
 main().catch((e) => {
