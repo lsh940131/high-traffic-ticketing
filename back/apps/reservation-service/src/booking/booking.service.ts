@@ -87,6 +87,32 @@ export class BookingService implements OnModuleInit {
     };
   }
 
+  /** 좌석 선점 해제(선택 취소). 내 소유 hold만 즉시 반환(TTL 대기 X). */
+  async releaseHold(
+    concertId: string,
+    userId: string,
+    ticketIds: string[],
+  ): Promise<{ released: number }> {
+    if (!ticketIds?.length) throw new BadRequestException('해제할 좌석을 지정하세요.');
+    const tickets = await this.prisma.ticket.findMany({
+      where: { id: { in: ticketIds }, concertId },
+      select: { seatId: true },
+    });
+    // 내가 소유한 hold만 해제(남의 것 못 풀게)
+    const mine: string[] = [];
+    for (const t of tickets) {
+      const owner = await this.redis.hget(this.ownerKey(concertId), t.seatId);
+      if (owner === userId) mine.push(t.seatId);
+    }
+    if (mine.length) {
+      await Promise.all([
+        this.redis.zrem(this.holdsKey(concertId), ...mine),
+        this.redis.hdel(this.ownerKey(concertId), ...mine),
+      ]);
+    }
+    return { released: mine.length };
+  }
+
   /** 예매 생성: 주문(PENDING) + 항목 + Outbox를 한 트랜잭션으로. 결제는 비동기. */
   async reserve(concertId: string, userId: string, ticketIds: string[]): Promise<OrderResultDto> {
     const tickets = await this.loadTickets(concertId, ticketIds);

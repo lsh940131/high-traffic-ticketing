@@ -30,6 +30,16 @@ export class BookingController {
     return this.booking.hold(concertOf(req), user.userId, dto.ticketIds);
   }
 
+  @Post('hold/release')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '좌석 선점 해제',
+    description: '좌석 선택 취소 시 내 hold를 즉시 반환(TTL 대기 없이). 내 소유 좌석만.',
+  })
+  release(@Body() dto: TicketsRequestDto, @CurrentUser() user: AuthUser, @Req() req: Request) {
+    return this.booking.releaseHold(concertOf(req), user.userId, dto.ticketIds);
+  }
+
   @Post()
   @HttpCode(201)
   @ApiOperation({
