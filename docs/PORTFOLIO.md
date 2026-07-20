@@ -14,6 +14,7 @@
 - **왜 Kafka인가**: 요청과 확정 분리. 파티션 수 = 처리 병렬도. 멱등성으로 at-least-once 대응.
 - **환경 전략**: base manifest 1개 + Kustomize overlay로 local→dev(k3s 노트북)→AWS(EKS+ElastiCache/MSK/RDS) 차이만 덮어씀.
 - **의도적 스코프 컷**: PG 결제 mock, 멀티리전 제외 — "트래픽 처리" 핵심에 집중(README에 명시).
+- **부하 검증은 k3s에서, AWS는 defer**: 오버셀 0·p95 latency 증명은 무료인 k3s 노트북에서 완료하고, EKS는 비용 대비 오버라 *필요 시 짧게 재현*(관리형 전환 + HPA/노드 오토스케일 시연). 배포 파이프라인은 레지스트리 push 모델로 통일해 EKS+ECR로 그대로 이전 가능. (근거·런북: `infra/k8s/README-dev.md`)
 
 ## 데모 스크린샷 후보
 1. Grafana 대시보드: 스파이크 전/후 p95 latency, consumer lag
