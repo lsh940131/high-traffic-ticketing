@@ -155,29 +155,39 @@ kubectl -n ticketing get hpa -w
 
 ## 현재 상태 / 다음 할 일
 
-**환경 값 (채워넣기)**
-- 노트북 IP: `192.168.219.150` (공유기 DHCP 예약 고정 완료)  · SSH: `ssh <user>@192.168.219.150` (user `<미정 — 내일 확인>`)
-- 배포판: `<미정 — 접속해 cat /etc/os-release로 확인>` (리눅스 업데이트는 완료됨)  · PC IP(레지스트리): `<미정 — ipconfig로 확인>`
-- 방화벽: 공유기 포워딩 불필요(같은 LAN). 노트북 ufw active면 22·6443·30000:32767 허용, PC는 5000 인바운드 허용.
-  - `ufw`는 노트북(리눅스) 방화벽. SSH 접속 후 `sudo ufw status`로 **실측** 필요(inactive면 손댈 것 없음).
-  - PC 5000 = PC에 띄우는 이미지 레지스트리(창고) 포트. k3s가 여기서 이미지 pull. (= ECR의 로컬 버전)
+**환경 값 (실측 완료)**
+- 노트북 IP: `192.168.219.150` (공유기 DHCP 예약 고정)  · SSH: `ssh ubuntu@192.168.219.150` (키 인증 등록됨 — PC `~/.ssh/id_ed25519`)
+- 배포판: `Ubuntu 22.04.5 LTS` (x86_64)  · PC IP(레지스트리): `192.168.219.103`  · k3s: `v1.36.2+k3s1`
+- 방화벽: 노트북 `ufw` **inactive**(손댈 것 없음). PC 5000 인바운드는 Docker Desktop이 이미 허용(노트북→PC:5000 도달 확인).
+  - PC 5000 = 이미지 레지스트리(창고). k3s가 여기서 pull. (= ECR의 로컬 버전)
+- MinIO(포스터 스토리지): NodePort `http://192.168.219.150:30900`(API)·`:30901`(console), 계정 `minioadmin/minioadmin`, 버킷 `posters`(public read).
+
+**⚠️ 런북에 없던 함정 (다음에도 필요) — 이번에 해결한 것들**
+- **Docker Desktop → PC 레지스트리 push가 HTTPS 오류**(`server gave HTTP response to HTTPS client`).
+  근본 해결은 `~/.docker/daemon.json`에 `"insecure-registries":["192.168.219.103:5000"]` 후 Docker 재시작.
+  단, Docker Desktop이 이 편집을 되돌리는 경우가 있어 이번엔 **`localhost:5000`로 push**(같은 레지스트리 컨테이너 → repo 경로 동일 → k3s는 IP로 pull) 우회로 진행함.
+- **이미지 실행 경로**: nest 모노레포 산출물은 `dist/apps/<app>/**src**/main.js` (Dockerfile CMD 수정 반영).
+- **prisma postinstall**: `npm install` 전에 `COPY prisma` 필요(Dockerfile 수정 반영). `prisma migrate deploy`는 `prisma.config.ts`(Prisma 7)가 필요 → 이미지에 없어 파드로 `cat` 밀어넣고 실행.
+- **kafka**: `bitnami/kafka:3.7` Docker Hub 삭제됨 → `bitnamilegacy/kafka:3.7`. + Service에 컨트롤러 포트 `9093` 노출 + `KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092`(파드 호스트명 광고 → 앱 DNS 실패 방지).
+- **`:dev` 태그 재배포**: 태그 고정이라 IfNotPresent가 재pull 안 함 → 재빌드 후 `k3s ctr images rm <img>` + `kubectl rollout restart`로 강제 재pull.
+- **시드**: `init/seed.ts`가 MinIO에 포스터 업로드(필수 경로)라 클러스터에 MinIO 추가. 생성 prisma 클라이언트가 runner 이미지에 소스로 없어 파드 내 실행 불가 → **PC에서** postgres port-forward(15432) + `MINIO_ENDPOINT=http://192.168.219.150:30900`로 `npm run seed` 실행(업로드 주소=저장 URL 일치 → 브라우저 조회 가능).
 
 **진행 체크리스트**
 - [x] 노트북 IP 고정 (192.168.219.150)
-- [ ] SSH 접속 확인 (user 확정)
-- [ ] k3s 설치
-- [ ] PC 레지스트리 기동 + 방화벽 5000 허용
-- [ ] k3s `registries.yaml` insecure 등록
-- [ ] PC로 kubeconfig 가져오기 (`KUBECONFIG=~/.kube/config-dev`)
-- [ ] 이미지 5종 빌드 & push
-- [ ] `overlays/dev` image transformer 채우고 `kubectl apply -k`
-- [ ] DB 마이그레이션/시드
-- [ ] 접속 확인 (ingress/NodePort)
-- [ ] k6 부하 + pod 스케일 → 수치 기록
+- [x] SSH 접속 확인 (user `ubuntu`, 키 인증)
+- [x] k3s 설치 (v1.36.2+k3s1)
+- [x] PC 레지스트리 기동 (방화벽 이미 허용)
+- [x] k3s `registries.yaml` insecure 등록
+- [x] PC로 kubeconfig 가져오기 (`KUBECONFIG=~/.kube/config-dev`)
+- [x] 이미지 5종 빌드 & push (localhost 경유)
+- [x] `overlays/dev` image transformer 채우고 `kubectl apply -k`
+- [x] DB 마이그레이션(6개) + 시드(공연 10·티켓 23,200·좌석 4640·유저 3)
+- [x] 접속 확인 (gateway→reservation→DB 200, 포스터 200)
+- [ ] **k6 부하 + pod 스케일 → 수치 기록**  ← 다음
 - [ ] (후속) Prometheus/Grafana 대시보드
 - [ ] (보류) AWS/EKS 재현 — 필요 시 `README-aws.md`
 
-**다음 세션 재개 지점** (마지막 업데이트: 오늘 밤 작업 종료 시점)
-- ✅ 완료: 배포 방식 결정(레지스트리 push 모델) + 이 문서·`CLAUDE.md`·`PORTFOLIO.md` 반영, 노트북 IP 고정(192.168.219.150), 노트북 리눅스 업데이트.
-- ▶ **내일 여기서 시작**: `ssh <user>@192.168.219.150` 접속 → `cat /etc/os-release`(배포판 확인) → `sudo ufw status`(방화벽 실측) → 런북 **1) k3s 설치** 진행.
-- 시작 전 알려줄 값: **노트북 SSH user**, **PC IP**. (레지스트리를 PC 대신 노트북에 둘지 여부도 그때 최종 결정)
+**다음 세션 재개 지점** (마지막 업데이트: 배포+시드 완료 시점)
+- ✅ 완료: 전체 스택 k3s 배포·헬스 확인·시드까지. 위 "함정" 수정들은 아직 **커밋 안 됨**(Dockerfile·kafka.yaml·minio.yaml 신규·kustomization·replicas-patch·front/vite-env.d.ts·overlays/dev image transformer).
+- ▶ **다음 시작**: 런북 **8) k6 부하 + pod 스케일**. gateway를 NodePort로 노출 후 `k6 run -e BASE=http://192.168.219.150:<nodePort> infra/loadtest/*.js`, queue/gateway replica 늘려가며 오버셀 0·p95 기록.
+- 참고: 노트북 kubeconfig는 PC `~/.kube/config-dev`. 재배포 시 `:dev` 강제 재pull 절차(위 함정) 잊지 말 것.
