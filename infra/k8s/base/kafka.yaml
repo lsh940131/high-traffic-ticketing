@@ -10,18 +10,22 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: bitnami/kafka:3.7
-          ports: [{ containerPort: 9092 }]
+          image: bitnamilegacy/kafka:3.7
+          ports: [{ containerPort: 9092 }, { containerPort: 9093 }]
           env:
-            - { name: KAFKA_CFG_NODE_ID, value: "0" }
-            - { name: KAFKA_CFG_PROCESS_ROLES, value: "controller,broker" }
-            - { name: KAFKA_CFG_LISTENERS, value: "PLAINTEXT://:9092,CONTROLLER://:9093" }
-            - { name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS, value: "0@kafka:9093" }
-            - { name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES, value: "CONTROLLER" }
+            - { name: KAFKA_CFG_NODE_ID, value: '0' }
+            - { name: KAFKA_CFG_PROCESS_ROLES, value: 'controller,broker' }
+            - { name: KAFKA_CFG_LISTENERS, value: 'PLAINTEXT://:9092,CONTROLLER://:9093' }
+            # 클라이언트가 부트스트랩 후 접속할 주소 → 파드 호스트명 대신 Service명으로 광고
+            - { name: KAFKA_CFG_ADVERTISED_LISTENERS, value: 'PLAINTEXT://kafka:9092' }
+            - { name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS, value: '0@kafka:9093' }
+            - { name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES, value: 'CONTROLLER' }
 ---
 apiVersion: v1
 kind: Service
 metadata: { name: kafka, namespace: ticketing }
 spec:
   selector: { app: kafka }
-  ports: [{ port: 9092, targetPort: 9092 }]
+  ports:
+    - { name: broker, port: 9092, targetPort: 9092 }
+    - { name: controller, port: 9093, targetPort: 9093 }
