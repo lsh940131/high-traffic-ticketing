@@ -14,11 +14,10 @@ WORKDIR /app
 ARG APP=gateway
 
 # lockfile 생기면 `npm ci`로 교체 권장
+# prisma를 먼저 복사해야 package.json의 postinstall(prisma generate)이 스키마를 찾는다.
 COPY package.json ./
-RUN npm install
-
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN npm install
 
 COPY tsconfig.json nest-cli.json ./
 COPY apps ./apps
@@ -41,4 +40,5 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
 # 포트는 각 앱이 PORT 환경변수로 읽음(k8s containerPort가 주입). 기본값은 코드에 있음.
-CMD ["sh", "-c", "node dist/apps/${APP}/main.js"]
+# nest 모노레포 빌드 산출물 경로는 dist/apps/<app>/src/main.js (src 한 겹 더 있음).
+CMD ["sh", "-c", "node dist/apps/${APP}/src/main.js"]
