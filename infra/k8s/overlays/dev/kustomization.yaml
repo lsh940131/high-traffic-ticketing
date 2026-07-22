@@ -6,6 +6,25 @@ resources:
   - ingress.yaml
 patches:
   - path: replicas-patch.yaml
+  - path: gateway-nodeport-patch.yaml
+images:
+  - { name: ticketing-gateway, newName: 192.168.219.103:5000/ticketing-gateway, newTag: dev }
+  - {
+      name: ticketing-queue-service,
+      newName: 192.168.219.103:5000/ticketing-queue-service,
+      newTag: dev,
+    }
+  - {
+      name: ticketing-reservation-service,
+      newName: 192.168.219.103:5000/ticketing-reservation-service,
+      newTag: dev,
+    }
+  - {
+      name: ticketing-payment-service,
+      newName: 192.168.219.103:5000/ticketing-payment-service,
+      newTag: dev,
+    }
+  - { name: ticketing-front, newName: 192.168.219.103:5000/ticketing-front, newTag: dev }
 configMapGenerator:
   - name: back-config
     literals:

@@ -1,0 +1,10 @@
+# dev: gateway를 고정 NodePort로 노출 (부하테스트/브라우저 확인용 지름길).
+#   http://<노트북IP>:30300  →  gateway:3000
+# 프로덕션에선 Ingress(도메인:443)가 이 역할을 대신하므로 base는 ClusterIP 유지, dev에서만 덮는다.
+apiVersion: v1
+kind: Service
+metadata: { name: gateway, namespace: ticketing }
+spec:
+  type: NodePort
+  ports:
+    - { port: 3000, targetPort: 3000, nodePort: 30300 }
