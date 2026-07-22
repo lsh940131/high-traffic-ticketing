@@ -11,5 +11,6 @@ resources:
   - redis.yaml
   - kafka.yaml
   - postgres.yaml
+  - minio.yaml
 commonLabels:
   app.kubernetes.io/part-of: ticketing
