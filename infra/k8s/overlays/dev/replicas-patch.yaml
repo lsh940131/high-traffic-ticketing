@@ -1,10 +1,10 @@
 # 대기열은 폴링 트래픽이 많아 우선 스케일
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: queue-service }
+metadata: { name: queue-service, namespace: ticketing }
 spec: { replicas: 2 }
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: gateway }
+metadata: { name: gateway, namespace: ticketing }
 spec: { replicas: 2 }
