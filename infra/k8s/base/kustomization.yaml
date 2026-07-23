@@ -6,6 +6,7 @@ resources:
   - queue-service.yaml
   - reservation-service.yaml
   - payment-service.yaml
+  - user-service.yaml
   - front-deployment.yaml
   - front-service.yaml
   - redis.yaml

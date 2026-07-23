@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: user-service, namespace: ticketing }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: user-service } }
+  template:
+    metadata: { labels: { app: user-service } }
+    spec:
+      containers:
+        - name: user-service
+          image: ticketing-user-service:latest
+          ports: [{ containerPort: 3104 }]
+          envFrom:
+            - configMapRef: { name: back-config }
+            - secretRef: { name: back-secret }
+          resources:
+            requests: { cpu: '200m', memory: '256Mi' }
+            limits: { cpu: '1', memory: '512Mi' }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: user-service, namespace: ticketing }
+spec:
+  selector: { app: user-service }
+  ports: [{ port: 3104, targetPort: 3104 }]

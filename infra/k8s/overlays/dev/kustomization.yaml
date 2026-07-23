@@ -25,6 +25,11 @@ images:
       newTag: dev,
     }
   - { name: ticketing-front, newName: 192.168.219.103:5000/ticketing-front, newTag: dev }
+  - {
+      name: ticketing-user-service,
+      newName: 192.168.219.103:5000/ticketing-user-service,
+      newTag: dev,
+    }
 configMapGenerator:
   - name: back-config
     literals:
@@ -33,6 +38,7 @@ configMapGenerator:
       - DATABASE_URL=postgresql://ticket:ticket@postgres:5432/ticketing
       - QUEUE_URL=http://queue-service:3101
       - RESERVATION_URL=http://reservation-service:3102
+      - USER_URL=http://user-service:3104
       - QUEUE_ACTIVE_CAPACITY=1000
 secretGenerator:
   - name: back-secret
