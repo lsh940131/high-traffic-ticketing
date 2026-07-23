@@ -123,19 +123,32 @@ export class BookingService implements OnModuleInit {
     if (owned + qty > MAX_PER_CONCERT)
       throw new BadRequestException(`1인 최대 ${MAX_PER_CONCERT}매까지 예매할 수 있습니다.`);
 
+    // 고동시성 대비: 넓은 후보군을 무작위 구간에서 가져와 셔플 → 동시 구매자가 서로 다른
+    // 좌석을 집어 분산된다. (좁은 고정창이면 모두 같은 좌석에 몰려, hold이 DB status를
+    // 바꾸지 않는 특성상 재고가 남아도 조기 "매진"이 되는 문제. 부하테스트로 발견.)
     const held = new Set(
       await this.redis.zrangebyscore(this.holdsKey(concertId), Date.now(), '+inf'),
     );
+    const available = await this.prisma.ticket.count({
+      where: { concertId, grade: 'STANDING', status: TicketStatus.AVAILABLE, deletedAt: null },
+    });
+    if (available < qty) throw new ConflictException('스탠딩이 매진되었습니다.');
+
+    const window = Math.max(qty * 50, 300);
+    const skip = available > window ? Math.floor(Math.random() * (available - window)) : 0;
     const candidates = await this.prisma.ticket.findMany({
       where: { concertId, grade: 'STANDING', status: TicketStatus.AVAILABLE, deletedAt: null },
       select: { id: true, seatId: true, price: true },
-      take: qty + 30,
+      orderBy: { id: 'asc' },
+      skip,
+      take: window,
     });
-    const free = candidates.filter((c) => !held.has(c.seatId));
+    const free = this.shuffle(candidates.filter((c) => !held.has(c.seatId)));
     if (free.length < qty) throw new ConflictException('스탠딩이 매진되었습니다.');
 
-    for (let i = 0; i + qty <= free.length && i < qty * 4; i += qty) {
-      const pick = free.slice(i, i + qty);
+    const maxAttempts = Math.min(Math.floor(free.length / qty), 20);
+    for (let a = 0; a < maxAttempts; a++) {
+      const pick = free.slice(a * qty, a * qty + qty);
       const now = Date.now();
       const expiry = now + this.ttlSec * 1000;
       const ok = await this.runHold(
@@ -407,6 +420,15 @@ export class BookingService implements OnModuleInit {
 
   private newOrderNo() {
     return `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  }
+
+  // Fisher-Yates 셔플(제자리). 동시 구매자의 좌석 선택을 분산시킨다.
+  private shuffle<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 
   private async runHold(
