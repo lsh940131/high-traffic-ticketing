@@ -3,7 +3,7 @@
 `overlays/dev`를 **개인 리눅스 노트북의 k3s**에 올려, k6로 티켓 오픈 스파이크를 재현하고
 pod을 늘려가며 아키텍처(가상 대기열·Lua 재고·Kafka)가 부하에서 버티는지 수치로 검증한다.
 
-> 짝 문서: 로컬(docker-compose) = 루트 README, AWS = `README-aws.md`.
+> 짝 문서: 로컬(docker-compose) = 루트 README, PC 큰 부하·스케일아웃 = `README-pc.md`, AWS = `README-aws.md`.
 > 이 문서는 **AI/사람이 dev 배포를 이어서 할 때 먼저 읽는 작업 문서**다. (루트 `CLAUDE.md`에서 링크)
 
 ---
