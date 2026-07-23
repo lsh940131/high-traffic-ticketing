@@ -42,6 +42,60 @@ pod을 늘려가며 아키텍처(가상 대기열·Lua 재고·Kafka)가 부하�
 
 ---
 
+## 파드 구조 · 요청/응답 흐름
+
+k3s 노드 안에서 파드들이 어떻게 놓이고, 요청이 어떤 경로로 오가는지.
+
+### 구조 (누가 무엇을 호출하나)
+
+```
+┌── 외부 ───────────────────────────────────────────────────────────────────┐
+│  브라우저 · k6        ─►  NodePort :30300  (gateway 로 REST)                 │
+│  브라우저(포스터)      ─►  NodePort :30900  (minio 로 직접)                   │
+└───────────────────────────────────────────────────────────────────────────┘
+              │ 동기 REST (JSON)
+┌── k3s 노드 · namespace: ticketing ────────────────────────────────────────┐
+│                                                                           │
+│  ┌──────────────┐  경로 prefix 리버스 프록시 (Bearer JWT · x-entry-token 전파) │
+│  │ gateway  ×2  │──┬── /auth/*           ─►  user-service    :3104          │
+│  │ :3000  (BFF) │  ├── /queue/*          ─►  queue-service   :3101 ×2       │
+│  │ 단일 진입점   │  ├── /concerts         ─►  reservation-svc :3102          │
+│  └──────────────┘  ├── /reservations/*   ─►  reservation-svc :3102          │
+│        ▲           └── /orders/*         ─►  reservation-svc :3102          │
+│        │ res(JSON)                           payment-service :3103          │
+│        │                                       (HTTP 라우트 없음·Kafka 소비)  │
+│  ── 저장소 (ClusterIP, 내부 전용) ───────────────────────────────────────── │
+│   redis    : 대기열 ZSET · Lua 재고/좌석 원자 선점                            │
+│   postgres : 유저·공연·티켓·주문 (Prisma)                                    │
+│   kafka    : 예매 이벤트(ORDER_REQUESTED) → payment 가 비동기 소비            │
+│   minio    : 포스터 이미지(S3 호환) — 브라우저가 posterUrl로 직접 조회         │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+- **gateway = 단일 진입점(BFF)**: 외부에 노출되는 유일한 백엔드. 경로 prefix로 각 서비스에 프록시하며
+  로그인 토큰(`Authorization`)·대기열 입장 토큰(`x-entry-token`)을 다운스트림에 전파한다.
+- **백엔드 서비스는 전부 ClusterIP = 클러스터 내부 전용** (외부에서 직접 못 닿음 = 의도된 경계).
+- **payment-service는 HTTP 라우트가 없음** — Kafka 이벤트를 구독해 결제를 비동기 처리한다.
+
+### 예매 한 건의 요청/응답 여정 (동기 ①~④ + 비동기 ⑤)
+
+```
+ ①  POST /auth/login        gateway→user-service→postgres(bcrypt 검증)         ⇒ 200  AT(JWT)
+ ②  POST /queue/{c}/enter   gateway→queue-service→redis(ZSET·Lua admit)        ⇒ 201  입장토큰(정원 여유 시 즉시)
+ ③  POST /reservations/hold gateway→reservation→redis(Lua hold)+postgres(재고)  ⇒ 200  ticketIds (TTL 선점) ◄─ 오버셀 1차 방어
+ ④  POST /reservations      gateway→reservation→postgres(주문+Outbox, 1 트랜잭션) ⇒ 201  주문 PENDING
+ ───────────────────────────────────────────────────────────────────────────────────────────────
+ ⑤  Outbox ─► kafka(ORDER_REQUESTED) ─► payment-service ─► postgres            ⇒ ticket.status SOLD(원자 조건부 UPDATE) ◄─ 오버셀 2차 방어
+     (비동기)                                                                     주문 CONFIRMED / 실패 시 FAILED → 상태 폴링
+```
+
+- **인증 2종**: `Authorization: Bearer <AT>`(신원, 로그인) + `x-entry-token`(대기열 통과 증명, 예매 전용).
+- **오버셀 방어 2층**: ③ Redis Lua 원자 선점(동일 좌석 동시 점유 차단) + ⑤ `ticket.status` 원자 조건부
+  UPDATE(단 1건만 SOLD). 상세 검증은 `../loadtest/RESULTS.md`.
+- **dual-write 유실 방지**: ④에서 주문과 이벤트를 **같은 트랜잭션의 Outbox**에 기록 → 릴레이가 Kafka 발행.
+
+---
+
 ## 사전 준비
 
 - [ ] 노트북 **IP 고정**(라우터 DHCP 예약 또는 netplan static). 예: `192.168.219.150`
