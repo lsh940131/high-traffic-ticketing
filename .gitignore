@@ -8,3 +8,5 @@ back/node_modules/
 back/dist/
 # Prisma 7: 생성 클라이언트는 커밋하지 않고 prisma generate 로 재생성
 back/libs/prisma/generated/
+# 부하테스트 유저 ID 풀: 재시드하면 무효화되는 환경별 생성물(seed 후 재생성)
+infra/loadtest/users.json
