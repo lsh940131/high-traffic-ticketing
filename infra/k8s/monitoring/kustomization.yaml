@@ -1,0 +1,9 @@
+# 관측 애드온(Prometheus + Grafana). 앱 base/overlay와 분리해 별도 적용.
+#   kubectl apply -k infra/k8s/monitoring
+# 앱이 이미 떠 있는 ticketing 네임스페이스에 얹는다(서비스 DNS로 스크레이프).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ticketing
+resources:
+  - prometheus.yaml
+  - grafana.yaml

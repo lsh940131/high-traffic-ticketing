@@ -30,9 +30,9 @@ pod을 늘려가며 아키텍처(가상 대기열·Lua 재고·Kafka)가 부하�
 
 ```
 [Windows PC]  = 빌드 + 레지스트리 + 부하 생성(k6)         [리눅스 노트북] = k3s (단일 노드)
-  docker build/push ─┐                                       ┌─ containerd가 pull
+  docker build/push ──┐                           ┌─ containerd가 pull
   registry:2 (:5000) ─┼──────────  LAN  ──────────┼─ k3s (traefik, metrics-server 내장)
-  k6 run  ───────────┘  → NodePort/Ingress로 부하   └─ gateway/queue/reservation/payment/front + redis/kafka/postgres
+  k6 run  ────────────┘  → NodePort/Ingress로 부하 └─ gateway/queue/reservation/payment/front + redis/kafka/postgres
 ```
 
 - **PC**: 코딩·이미지 빌드·레지스트리 호스팅·k6 부하 생성. (Docker Desktop 사용)
@@ -42,34 +42,32 @@ pod을 늘려가며 아키텍처(가상 대기열·Lua 재고·Kafka)가 부하�
 
 ---
 
-## 파드 구조 · 요청/응답 흐름
+## 노트북 쿠버네티스 환경 전체 구조 · 요청/응답 흐름
 
-k3s 노드 안에서 파드들이 어떻게 놓이고, 요청이 어떤 경로로 오가는지.
+노트북 k3s에 실제로 떠 있는 **모든 파드**(앱·데이터·관측 tier)와 외부 접속점, 그 위를 흐르는 요청/응답 경로.
 
-### 구조 (누가 무엇을 호출하나)
+### 전체 구조 (모든 파드 + 요청 경로)
 
 ```
-┌── 외부 ───────────────────────────────────────────────────────────────────┐
-│  브라우저 · k6        ─►  NodePort :30300  (gateway 로 REST)                 │
-│  브라우저(포스터)      ─►  NodePort :30900  (minio 로 직접)                   │
-└───────────────────────────────────────────────────────────────────────────┘
-              │ 동기 REST (JSON)
-┌── k3s 노드 · namespace: ticketing ────────────────────────────────────────┐
-│                                                                           │
-│  ┌──────────────┐  경로 prefix 리버스 프록시 (Bearer JWT · x-entry-token 전파) │
-│  │ gateway  ×2  │──┬── /auth/*           ─►  user-service    :3104          │
-│  │ :3000  (BFF) │  ├── /queue/*          ─►  queue-service   :3101 ×2       │
-│  │ 단일 진입점   │  ├── /concerts         ─►  reservation-svc :3102          │
-│  └──────────────┘  ├── /reservations/*   ─►  reservation-svc :3102          │
-│        ▲           └── /orders/*         ─►  reservation-svc :3102          │
-│        │ res(JSON)                           payment-service :3103          │
-│        │                                       (HTTP 라우트 없음·Kafka 소비)  │
-│  ── 저장소 (ClusterIP, 내부 전용) ───────────────────────────────────────── │
-│   redis    : 대기열 ZSET · Lua 재고/좌석 원자 선점                            │
-│   postgres : 유저·공연·티켓·주문 (Prisma)                                    │
-│   kafka    : 예매 이벤트(ORDER_REQUESTED) → payment 가 비동기 소비            │
-│   minio    : 포스터 이미지(S3 호환) — 브라우저가 posterUrl로 직접 조회         │
-└───────────────────────────────────────────────────────────────────────────┘
+외부 (LAN) · 브라우저 · k6
+  ├ Ingress :80 (traefik, ticketing.dev.local):   / → front,   /api → gateway
+  └ NodePort:  gateway 30300 · minio 30900/30901 · prometheus 30990 · grafana 30991
+        │ 요청 (REST / JSON)
+════ k3s 노드 (단일, ubuntu-ux310uqk) · namespace: ticketing ════════════════════════════
+
+  ── 앱 tier ──                                       ── 데이터 tier (ClusterIP · 내부) ──
+   front ×1           nginx 정적 SPA                    redis     대기열 ZSET · Lua 선점
+   gateway ×2 :3000   BFF · 단일 진입점                  postgres  유저 · 공연 · 티켓 · 주문
+      │ 경로 prefix 리버스 프록시(JWT·입장토큰)            kafka     예매 이벤트(비동기)
+      ├ /queue/*          → queue ×2 :3101 ─────────▶ redis         minio     포스터(S3)
+      ├ /concerts /reservations /orders
+      │                   → reservation :3102 ──────▶ redis(hold) + postgres(주문)
+      ├ /auth/*           → user :3104 ─────────────▶ postgres(bcrypt)
+      └ payment :3103   ◄── kafka 구독(비동기 결제) ──▶ postgres(ticket SOLD · 원자 UPDATE)
+
+  ── 관측 tier (요청 경로 밖 · 애드온 monitoring/) ──
+   prometheus (TSDB · :30990)  ──PULL: scrape /metrics──▶ 앱 5종    k6 ──PUSH: remote-write──▶ prometheus
+   grafana (:30991)            ──PromQL 쿼리──▶ prometheus
 ```
 
 - **gateway = 단일 진입점(BFF)**: 외부에 노출되는 유일한 백엔드. 경로 prefix로 각 서비스에 프록시하며
@@ -93,15 +91,32 @@ k3s 노드 안에서 파드들이 어떻게 놓이고, 요청이 어떤 경로�
 - **오버셀 방어 2층**: ③ Redis Lua 원자 선점(동일 좌석 동시 점유 차단) + ⑤ `ticket.status` 원자 조건부
   UPDATE(단 1건만 SOLD). 상세 검증은 `../loadtest/RESULTS.md`.
 - **dual-write 유실 방지**: ④에서 주문과 이벤트를 **같은 트랜잭션의 Outbox**에 기록 → 릴레이가 Kafka 발행.
+- **관측 tier(Prometheus·Grafana)는 요청 경로 밖의 애드온**(별도 `monitoring/`)이라 도식에 별도 tier로 뒀다.
+  Prometheus가 앱 `/metrics`를 PULL 스크레이프 → Grafana가 쿼리해 시각화. 원리는 바로 아래 섹션 참고.
 
 ---
 
-## 사전 준비
+## 관측(모니터링) 데이터 흐름 — Grafana는 어디서 가져오나
 
-- [ ] 노트북 **IP 고정**(라우터 DHCP 예약 또는 netplan static). 예: `192.168.219.150`
-- [ ] PC도 LAN에서 노트북이 닿는 IP. 예: `<PC-IP>` (레지스트리·kubeconfig server 주소로 쓰임)
-- [ ] PC → 노트북 **SSH 접속** 확인: `ssh <user>@192.168.219.150`
-- [ ] 노트북 배포판 확인(예: Ubuntu 22.04/24.04)
+Grafana는 **데이터를 저장하지 않는다.** 시각화(그림)만 하고, 실제 데이터는 **Prometheus**(시계열 DB)에
+있다. 즉 **Prometheus = 여기서의 TSDB**로, IoT 스택의 InfluxDB 자리를 대신한다.
+
+```
+  앱 5종 (/metrics 노출)  ◄── PULL: 5s 간격 scrape ───┐
+  gateway·queue·reservation·payment·user            │
+                                              Prometheus ──PromQL 쿼리──►  Grafana
+                                              (TSDB · emptyDir 6h)         (그림만 그림)
+  k6 (부하 지표)  ── PUSH: remote-write ─────────────┘
+```
+
+**핵심 — Prometheus는 PULL(스크레이프) 모델:**
+- 앱은 `/metrics`를 HTTP로 **열어두기만** 한다. **Prometheus가 5초마다 찾아가 GET**해서 긁어온다(pull).
+- InfluxDB는 반대로 **디바이스/에이전트(Telegraf 등)가 PUSH**해서 넣는다 — 그래서 "데이터가 어디서 오나"가 반대로 느껴진다.
+- **예외: k6는 PUSH(remote-write)** — 짧게 살다 죽는 프로세스라 스크레이프가 안 돼서, k6가 Prometheus로 직접 밀어넣는다.
+- **k8s에서 직접 땡기는 게 아니다**: Prometheus가 k8s **서비스 DNS로 `/metrics`를 HTTP GET**할 뿐,
+  k8s API에서 지표를 가져오는 게 아니다. (k8s는 앱이 도는 환경일 뿐.)
+- **저장소**: Prometheus 파드의 `emptyDir`(휘발, 6h 보존). InfluxDB를 별도로 돌리지 않고 Prometheus가 그 역할을 한다.
+- 적용·대시보드·k6 스트리밍 사용법: [`monitoring/README.md`](./monitoring/README.md).
 
 ---
 
@@ -235,13 +250,15 @@ kubectl -n ticketing get hpa -w
 - [x] PC로 kubeconfig 가져오기 (`KUBECONFIG=~/.kube/config-dev`)
 - [x] 이미지 5종 빌드 & push (localhost 경유)
 - [x] `overlays/dev` image transformer 채우고 `kubectl apply -k`
-- [x] DB 마이그레이션(6개) + 시드(공연 10·티켓 23,200·좌석 4640·유저 3)
+- [x] DB 마이그레이션(6개) + 시드(공연 10·티켓 23,200·좌석 4640·유저 5,003=부하 5,000 포함)
 - [x] 접속 확인 (gateway→reservation→DB 200, 포스터 200)
-- [ ] **k6 부하 + pod 스케일 → 수치 기록**  ← 다음
-- [ ] (후속) Prometheus/Grafana 대시보드
+- [x] user-service 배포(로그인/인증) + 부하 유저 대량 시드
+- [x] k6 부하 테스트 — 대기열 스파이크·**오버셀 0** 검증 (→ `loadtest/RESULTS.md`)
+- [x] Prometheus/Grafana 실시간 대시보드 (`monitoring/`, k6 remote-write)
+- [ ] (한계) pod 스케일아웃 수치 — 단일 4코어 노드라 무의미 → 멀티노드/EKS 영역
 - [ ] (보류) AWS/EKS 재현 — 필요 시 `README-aws.md`
 
-**다음 세션 재개 지점** (마지막 업데이트: 배포+시드 완료 시점)
-- ✅ 완료: 전체 스택 k3s 배포·헬스 확인·시드까지. 위 "함정" 수정들은 아직 **커밋 안 됨**(Dockerfile·kafka.yaml·minio.yaml 신규·kustomization·replicas-patch·front/vite-env.d.ts·overlays/dev image transformer).
-- ▶ **다음 시작**: 런북 **8) k6 부하 + pod 스케일**. gateway를 NodePort로 노출 후 `k6 run -e BASE=http://192.168.219.150:<nodePort> infra/loadtest/*.js`, queue/gateway replica 늘려가며 오버셀 0·p95 기록.
-- 참고: 노트북 kubeconfig는 PC `~/.kube/config-dev`. 재배포 시 `:dev` 강제 재pull 절차(위 함정) 잊지 말 것.
+**다음 세션 재개 지점** (마지막 업데이트: 부하테스트 + 관측 대시보드 완료)
+- ✅ 완료: 전체 스택 배포·시드, user-service 배포, **k6 부하테스트(오버셀 0 증명 + `holdStanding` 고동시성 버그 발견·수정)**, Prometheus/Grafana 실시간 대시보드까지. 대부분 커밋 완료(관측 스택 커밋만 대기).
+- ▶ **다음 후보**: 멀티노드/EKS로 **수평 확장(HPA·노드 오토스케일) 수치** — 단일 4코어 노드에선 못 뽑는 영역. `overlays/aws` + `README-aws.md`로 이어감.
+- 참고: 노트북 kubeconfig는 PC `~/.kube/config-dev`. 재배포 시 `:dev` 강제 재pull 절차(위 함정) 잊지 말 것. **재부팅 시 postgres·minio(emptyDir)는 데이터 휘발 → 재시드 필요.**

@@ -1,0 +1,146 @@
+# Grafana — Prometheus 데이터소스 + 대시보드 자동 프로비저닝. 익명 열람 허용(dev).
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: grafana-datasources, namespace: ticketing }
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: grafana-dashboard-provider, namespace: ticketing }
+data:
+  provider.yaml: |
+    apiVersion: 1
+    providers:
+      - name: default
+        type: file
+        options: { path: /var/lib/grafana/dashboards }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: grafana-dashboards, namespace: ticketing }
+data:
+  ticketing.json: |
+    {
+      "uid": "ticketing-live",
+      "title": "Ticketing — Live (server)",
+      "schemaVersion": 39,
+      "refresh": "5s",
+      "time": { "from": "now-15m", "to": "now" },
+      "timezone": "browser",
+      "panels": [
+        {
+          "id": 1, "type": "timeseries", "title": "CPU (cores) / service",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "none", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "rate(process_cpu_seconds_total[30s])", "legendFormat": "{{service}}" } ]
+        },
+        {
+          "id": 2, "type": "timeseries", "title": "Event-loop lag p99 (s) / service — 포화 신호",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "nodejs_eventloop_lag_p99_seconds", "legendFormat": "{{service}}" } ]
+        },
+        {
+          "id": 3, "type": "timeseries", "title": "Resident memory / service",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "bytes", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "process_resident_memory_bytes", "legendFormat": "{{service}}" } ]
+        },
+        {
+          "id": 4, "type": "timeseries", "title": "Active handles / service",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "none", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "nodejs_active_handles_total", "legendFormat": "{{service}}" } ]
+        },
+        {
+          "id": 5, "type": "timeseries", "title": "k6 — VUs (부하 세기)",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "none", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "k6_vus", "legendFormat": "VUs" } ]
+        },
+        {
+          "id": 6, "type": "timeseries", "title": "k6 — 처리량 (RPS)",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "reqps", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "sum(rate(k6_http_reqs_total[15s]))", "legendFormat": "req/s" } ]
+        },
+        {
+          "id": 7, "type": "timeseries", "title": "k6 — 실패율",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 16 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "k6_http_req_failed_rate", "legendFormat": "failed" } ]
+        },
+        {
+          "id": 8, "type": "timeseries", "title": "k6 — p95 지연 / 엔드포인트 (s)",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+          "targets": [ { "refId": "A", "expr": "k6_http_req_duration_p95{name=~\".+\"}", "legendFormat": "{{name}}" } ]
+        },
+        {
+          "id": 9, "type": "timeseries", "title": "k6 — 예매 성공 vs 매진 (누적)",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "none", "min": 0 }, "overrides": [] },
+          "targets": [
+            { "refId": "A", "expr": "k6_reserved_ok_total", "legendFormat": "예매 성공" },
+            { "refId": "B", "expr": "k6_sold_out_total", "legendFormat": "매진 거절" }
+          ]
+        }
+      ]
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: grafana, namespace: ticketing }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: grafana } }
+  template:
+    metadata: { labels: { app: grafana } }
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.4.0
+          env:
+            - { name: GF_SECURITY_ADMIN_USER, value: 'admin' }
+            - { name: GF_SECURITY_ADMIN_PASSWORD, value: 'admin' }
+            - { name: GF_AUTH_ANONYMOUS_ENABLED, value: 'true' }
+            - { name: GF_AUTH_ANONYMOUS_ORG_ROLE, value: 'Viewer' }
+          ports: [{ containerPort: 3000 }]
+          volumeMounts:
+            - { name: datasources, mountPath: /etc/grafana/provisioning/datasources }
+            - { name: dashboard-provider, mountPath: /etc/grafana/provisioning/dashboards }
+            - { name: dashboards, mountPath: /var/lib/grafana/dashboards }
+          resources:
+            requests: { cpu: '100m', memory: '128Mi' }
+            limits: { cpu: '500m', memory: '256Mi' }
+      volumes:
+        - { name: datasources, configMap: { name: grafana-datasources } }
+        - { name: dashboard-provider, configMap: { name: grafana-dashboard-provider } }
+        - { name: dashboards, configMap: { name: grafana-dashboards } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: grafana, namespace: ticketing }
+spec:
+  type: NodePort
+  selector: { app: grafana }
+  ports:
+    - { name: web, port: 3000, targetPort: 3000, nodePort: 30991 }
