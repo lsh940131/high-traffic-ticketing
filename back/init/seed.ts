@@ -3,6 +3,7 @@ import { join } from 'path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../libs/prisma/generated/prisma/client';
 import { uploadConcertImages } from './minio';
+import * as bcrypt from 'bcryptjs';
 
 /**
  * 개발용 시드 (초기화).
@@ -173,13 +174,24 @@ async function main() {
   await prisma.venue.deleteMany();
   await prisma.user.deleteMany();
 
-  await prisma.user.createMany({
-    data: [
-      { name: '테스트유저1', email: 'user1@ticketing.dev', passwordHash: 'seed-placeholder' },
-      { name: '테스트유저2', email: 'user2@ticketing.dev', passwordHash: 'seed-placeholder' },
-      { name: '테스트유저3', email: 'user3@ticketing.dev', passwordHash: 'seed-placeholder' },
-    ],
-  });
+  // 부하테스트용 유저: 전원 같은 비밀번호 → bcrypt 해시를 1번만 만들어 공유(대량 생성 시 해시 비용 절감).
+  //   로그인: email=load-<i>@ticketing.dev, password=LOADTEST_PASSWORD
+  const LOADTEST_USERS = Number(process.env.LOADTEST_USERS ?? 5000);
+  const LOADTEST_PASSWORD = process.env.LOADTEST_PASSWORD ?? 'loadtest1234';
+  const sharedHash = await bcrypt.hash(LOADTEST_PASSWORD, 10);
+  const users = [
+    { name: '테스트유저1', email: 'user1@ticketing.dev', passwordHash: sharedHash },
+    { name: '테스트유저2', email: 'user2@ticketing.dev', passwordHash: sharedHash },
+    { name: '테스트유저3', email: 'user3@ticketing.dev', passwordHash: sharedHash },
+  ];
+  for (let i = 0; i < LOADTEST_USERS; i++) {
+    users.push({
+      name: `부하유저${i}`,
+      email: `load-${i}@ticketing.dev`,
+      passwordHash: sharedHash,
+    });
+  }
+  await prisma.user.createMany({ data: users });
 
   let concertIdx = 0;
   for (const v of VENUES) {
