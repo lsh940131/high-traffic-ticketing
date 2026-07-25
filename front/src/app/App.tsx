@@ -1,18 +1,39 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import QueuePage from '@/pages/QueuePage';
-import ReservationStatusPage from '@/pages/ReservationStatusPage';
+import { refresh } from '@/features/auth/api';
+import { useAuthStore } from '@/features/auth/store';
+import ProtectedRoute from '@/features/auth/ProtectedRoute';
+import LoginPage from '@/pages/LoginPage';
+import HomePage from '@/pages/HomePage';
 
 const qc = new QueryClient();
 
+// 부팅 시 RT 쿠키로 세션 복구(AT를 메모리에). 없으면 비로그인.
+function useBootstrapAuth() {
+  const [ready, setReady] = useState(false);
+  const setAuth = useAuthStore((s) => s.setAuth);
+  useEffect(() => {
+    refresh()
+      .then((r) => setAuth(r.accessToken, r.user))
+      .catch(() => undefined)
+      .finally(() => setReady(true));
+  }, [setAuth]);
+  return ready;
+}
+
 export default function App() {
+  const ready = useBootstrapAuth();
+  if (!ready) return <p style={{ padding: 32 }}>로딩 중…</p>;
   return (
     <QueryClientProvider client={qc}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/events/demo/queue" />} />
-          <Route path="/events/:eventId/queue" element={<QueuePage />} />
-          <Route path="/reservations/:reservationId" element={<ReservationStatusPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<HomePage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
