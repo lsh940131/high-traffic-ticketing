@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useLogin } from '@/features/auth/hooks';
+import LanguageToggle from '@/shared/ui/LanguageToggle';
 
-// 임시 로그인 화면(추후 Figma 디자인으로 대체).
 export default function LoginPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const login = useLogin();
   const [email, setEmail] = useState('hong@test.com');
@@ -17,17 +19,24 @@ export default function LoginPage() {
 
   return (
     <div style={{ maxWidth: 320, margin: '80px auto', display: 'grid', gap: 12 }}>
-      <h1>로그인</h1>
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <LanguageToggle />
+      </div>
+      <h1>{t('auth.loginTitle')}</h1>
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="이메일" />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('auth.email')}
+        />
         <input
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           type="password"
-          placeholder="비밀번호"
+          placeholder={t('auth.password')}
         />
         <button type="submit" disabled={login.isPending}>
-          {login.isPending ? '로그인 중…' : '로그인'}
+          {login.isPending ? t('auth.loggingIn') : t('auth.loginBtn')}
         </button>
       </form>
     </div>

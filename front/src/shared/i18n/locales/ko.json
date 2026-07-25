@@ -1,0 +1,23 @@
+{
+  "common": {
+    "appName": "Ticketing",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "mypage": "마이페이지",
+    "loading": "불러오는 중…"
+  },
+  "auth": {
+    "loginTitle": "로그인",
+    "email": "이메일",
+    "password": "비밀번호",
+    "loginBtn": "로그인",
+    "loggingIn": "로그인 중…"
+  },
+  "home": {
+    "title": "공연",
+    "soldOut": "매진",
+    "priceFrom": "{{price}}원~",
+    "priceTbd": "가격 미정",
+    "empty": "등록된 공연이 없습니다."
+  }
+}

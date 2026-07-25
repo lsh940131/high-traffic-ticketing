@@ -1,0 +1,23 @@
+{
+  "common": {
+    "appName": "Ticketing",
+    "login": "Log in",
+    "logout": "Log out",
+    "mypage": "My page",
+    "loading": "Loading…"
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "loginBtn": "Log in",
+    "loggingIn": "Logging in…"
+  },
+  "home": {
+    "title": "Concerts",
+    "soldOut": "Sold out",
+    "priceFrom": "From ₩{{price}}",
+    "priceTbd": "TBD",
+    "empty": "No concerts available."
+  }
+}
