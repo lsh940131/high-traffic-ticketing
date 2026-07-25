@@ -1,0 +1,21 @@
+/* Checkbox — on/off. Figma 02: Checkbox/on(파랑+체크), Checkbox/off(테두리). */
+.checkbox { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+.checkbox__box {
+  width: 18px; height: 18px;
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: transparent;
+  font-size: 12px; font-weight: 700; line-height: 1;
+  transition: background .12s, border-color .12s;
+}
+.checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+.checkbox input:checked + .checkbox__box {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.checkbox input:focus-visible + .checkbox__box { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.checkbox__label { font-size: 14px; color: var(--color-text); }

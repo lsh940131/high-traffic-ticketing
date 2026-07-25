@@ -1,0 +1,12 @@
+/* Footer — 2컬럼(회사/고객센터) + 구분선 + 면책·저작권. Figma 02 footer. 전 페이지 공통. */
+.footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 40px var(--space-6);
+}
+.footer__inner { max-width: 1340px; margin: 0 auto; }
+.footer__cols { display: flex; gap: 80px; flex-wrap: wrap; }
+.footer__heading { font-size: 14px; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-3); }
+.footer__line { font-size: var(--fs-caption); color: var(--color-text-muted); line-height: 1.7; }
+.footer__divider { height: 1px; background: var(--color-border); margin: var(--space-6) 0; }
+.footer__legal { font-size: 12px; color: var(--color-text-placeholder); line-height: 1.6; }

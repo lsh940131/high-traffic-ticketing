@@ -1,0 +1,21 @@
+// shared/ui 배럴 — import { Button, Field, Badge } from '@/shared/ui'
+export { default as Button } from './Button';
+export { default as Field } from './Field';
+export { default as Checkbox } from './Checkbox';
+export { default as Badge } from './Badge';
+export type { BadgeTone } from './Badge';
+export { default as Tab } from './Tab';
+export { default as Avatar } from './Avatar';
+export { default as ConcertCard } from './ConcertCard';
+export { default as AppBar } from './AppBar';
+export { default as Footer } from './Footer';
+export { default as ConfirmDialog } from './ConfirmDialog';
+export { default as StatusResult } from './StatusResult';
+export type { ResultVariant } from './StatusResult';
+export { default as BookingRow } from './BookingRow';
+export { default as SeatTile } from './SeatTile';
+export type { SeatState } from './SeatTile';
+export { default as ZoneBlock } from './ZoneBlock';
+export type { ZoneState } from './ZoneBlock';
+export { default as LanguageToggle } from './LanguageToggle';
+export { default as ThemeToggle } from './ThemeToggle';

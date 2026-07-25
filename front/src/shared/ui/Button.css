@@ -1,0 +1,41 @@
+/* Button — variant(primary/ghost/danger) × size(lg/md/sm) × disabled × fullWidth.
+   Figma 02: Button/primary·disabled, btn-leave(ghost), btn-confirm(danger), btn-home/cancel. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter .12s, background .12s, border-color .12s;
+}
+.btn:hover:not(:disabled) { filter: brightness(0.96); }
+.btn:active:not(:disabled) { filter: brightness(0.92); }
+.btn:disabled { cursor: not-allowed; }
+
+/* sizes (높이·라운드·글자크기는 Figma 마스터 실측) */
+.btn--lg { height: 50px; padding: 0 var(--space-6); border-radius: var(--radius); font-size: var(--fs-body); }
+.btn--md { height: 44px; padding: 0 var(--space-4); border-radius: 10px; font-size: 14px; }
+.btn--sm { height: 34px; padding: 0 var(--space-3); border-radius: var(--radius); font-size: var(--fs-caption); }
+
+/* variants */
+.btn--primary { background: var(--color-primary); color: var(--color-on-primary); }
+.btn--ghost {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border-color: var(--color-border-strong);
+}
+.btn--danger { background: var(--color-danger); color: #fff; font-weight: 600; }
+
+/* disabled — 모든 variant 공통 (비활성 채움 + 흐린 라벨) */
+.btn:disabled {
+  background: var(--color-border);
+  color: var(--color-text-placeholder);
+  border-color: transparent;
+  filter: none;
+}
+
+.btn--full { width: 100%; }

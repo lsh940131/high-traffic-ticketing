@@ -1,0 +1,19 @@
+/* ConfirmDialog — scrim + 흰 카드(제목·본문·2버튼). Figma 02 dialog + Modal/confirm. */
+.dialog__scrim {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-4);
+  z-index: 100;
+}
+.dialog {
+  width: 100%; max-width: 400px;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+  display: flex; flex-direction: column; gap: var(--space-6);
+}
+.dialog__title { font-size: 17px; font-weight: 700; color: var(--color-text); margin: 0; }
+.dialog__body { font-size: var(--fs-caption); color: var(--color-text-muted); line-height: 1.5; margin: var(--space-2) 0 0; white-space: pre-line; }
+.dialog__footer { display: flex; gap: var(--space-3); }
+.dialog__footer > * { flex: 1; }

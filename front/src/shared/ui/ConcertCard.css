@@ -1,0 +1,35 @@
+/* ConcertCard — 포스터(full-bleed 3:4) + 배지 + 제목 + 일시·장소. Figma 02 ConcertCard(240×424). */
+.concert-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .12s, box-shadow .12s;
+}
+.concert-card:hover { transform: translateY(-2px); }
+
+.concert-card__poster {
+  aspect-ratio: 3 / 4;          /* NOL 방식 세로 포스터 */
+  background: var(--color-surface-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.concert-card__poster img { width: 100%; height: 100%; object-fit: cover; }
+.concert-card__poster-ph { color: var(--color-text-placeholder); font-size: var(--fs-caption); }
+
+.concert-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px var(--space-4) var(--space-4);
+}
+.concert-card__title {
+  font-size: 16px; font-weight: 600; color: var(--color-text);
+  line-height: 1.3;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.concert-card__meta { font-size: var(--fs-caption); color: var(--color-text-muted); }
+.concert-card__badge { align-self: flex-start; }

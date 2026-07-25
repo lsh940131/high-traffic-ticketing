@@ -1,0 +1,15 @@
+/* ZoneBlock — 구역 블록(46×28). Figma 02: zoneblock(default)·selected·disabled. */
+.zoneblock {
+  min-width: 46px; height: 28px;
+  padding: 0 var(--space-2);
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 5px;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background .1s;
+}
+.zoneblock--default { background: var(--color-surface-2); color: var(--color-text-muted); }
+.zoneblock--default:hover { background: var(--color-border); }
+.zoneblock--selected { background: var(--badge-processing-bg); color: var(--color-primary); font-weight: 500; }
+.zoneblock--disabled { background: var(--color-surface-2); color: var(--color-text-placeholder); cursor: not-allowed; opacity: .6; }

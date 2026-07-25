@@ -1,0 +1,13 @@
+/* SeatTile — 좌석 1칸(30×22). Figma 02: seat/can·selected·disabled. HELD는 UI 비노출(=disabled). */
+.seat {
+  width: 30px; height: 22px;
+  border-radius: 4px;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background .1s;
+}
+.seat--can { background: var(--color-surface-2); }
+.seat--can:hover { background: var(--color-border); }
+.seat--selected { background: var(--color-primary); }
+.seat--disabled { background: var(--color-disabled); cursor: not-allowed; }

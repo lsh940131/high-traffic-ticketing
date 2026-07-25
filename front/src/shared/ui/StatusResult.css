@@ -1,0 +1,34 @@
+/* StatusResult — 결제 결과 상태 카드(중앙). Figma 02: processing/confirmed/failed/expired 4종.
+   아이콘 원 + 헤딩 + 서브 + (요약/경고/액션) 슬롯. 상태색은 아이콘 배경에만 tint. */
+.statusresult {
+  width: 100%; max-width: 420px;
+  box-sizing: border-box;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-8);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: var(--space-3);
+}
+.statusresult__icon {
+  width: 56px; height: 56px;
+  border-radius: 28px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; line-height: 1;
+  margin-bottom: var(--space-2);
+}
+.statusresult__icon--processing { background: var(--badge-processing-bg); color: var(--badge-processing-fg); }
+.statusresult__icon--confirmed  { background: var(--badge-success-bg);    color: var(--badge-success-fg); }
+.statusresult__icon--failed     { background: var(--badge-danger-bg);     color: var(--badge-danger-fg); }
+.statusresult__icon--expired    { background: var(--color-surface-2);     color: var(--color-text-placeholder); font-size: 14px; }
+.statusresult__heading { font-size: 19px; font-weight: 700; color: var(--color-text); margin: 0; }
+.statusresult__sub { font-size: var(--fs-caption); color: var(--color-text-muted); margin: 0; }
+.statusresult__mini { font-size: var(--fs-caption); font-weight: 500; color: var(--color-text); margin: 0; }
+.statusresult__order { font-size: 12px; color: var(--color-text-placeholder); margin: 0; }
+.statusresult__hold {
+  width: 100%; box-sizing: border-box;
+  background: var(--badge-warning-bg); color: var(--badge-warning-fg);
+  font-size: var(--fs-caption); font-weight: 600;
+  padding: var(--space-3); border-radius: var(--radius);
+}
+.statusresult__actions { width: 100%; display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-3); }
