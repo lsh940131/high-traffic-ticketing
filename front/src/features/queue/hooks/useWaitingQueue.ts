@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getQueueStatus } from '../api/queue';
+import { getQueueStatus } from '@/features/queue/api';
 
 const POLL = Number(import.meta.env.VITE_QUEUE_POLL_INTERVAL_MS ?? 2500);
 

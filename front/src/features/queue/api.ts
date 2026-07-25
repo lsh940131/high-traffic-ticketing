@@ -1,5 +1,5 @@
-import { api } from './client';
-import type { QueueStatus, ReservationResult, Seat } from '../types';
+import { api } from '@/shared/api/client';
+import type { QueueStatus, ReservationResult, Seat } from '@/shared/types';
 
 export const enterQueue = (eventId: string) =>
   api.post<QueueStatus>(`/queue/${eventId}/enter`).then((r) => r.data);

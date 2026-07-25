@@ -9,7 +9,8 @@
     "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": true,
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "paths": { "@/*": ["*"] }
   },
   "include": ["src"]
 }

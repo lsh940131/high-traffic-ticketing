@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useWaitingQueue } from '../hooks/useWaitingQueue';
-import { QueueProgress } from '../components/QueueProgress';
+import { useWaitingQueue } from '@/features/queue/hooks/useWaitingQueue';
+import { QueueProgress } from '@/features/queue/components/QueueProgress';
 
 // S2: 대기열. READY가 되면 좌석 선택으로 이동.
 export default function QueuePage() {

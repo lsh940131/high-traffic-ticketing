@@ -1,9 +1,9 @@
 export interface QueueStatus {
   status: 'WAITING' | 'READY';
-  rank: number;          // 내 앞 대기 인원
-  total: number;         // 전체 대기 인원
-  etaSeconds: number;    // 예상 대기 시간
-  entryToken?: string;   // status==READY일 때 발급
+  rank: number; // 내 앞 대기 인원
+  total: number; // 전체 대기 인원
+  etaSeconds: number; // 예상 대기 시간
+  entryToken?: string; // status==READY일 때 발급
   tokenExpiresAt?: string;
 }
 

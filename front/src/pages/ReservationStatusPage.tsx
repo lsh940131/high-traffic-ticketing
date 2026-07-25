@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useReservationStatus } from '../hooks/useReservationStatus';
+import { useReservationStatus } from '@/features/booking/hooks/useReservationStatus';
 
 // S5/S6: 비동기 예매 결과. Kafka 컨슈머가 처리 완료할 때까지 폴링.
 export default function ReservationStatusPage() {
