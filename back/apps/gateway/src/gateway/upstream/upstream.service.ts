@@ -25,6 +25,7 @@ const RETRYABLE_STATUS = new Set([502, 503, 504]);
 export interface UpstreamResult {
   status: number;
   data: unknown;
+  headers?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -94,7 +95,11 @@ export class UpstreamService {
           }
           throw new Error(`upstream ${res.status}`);
         }
-        return { status: res.status, data: res.data };
+        return {
+          status: res.status,
+          data: res.data,
+          headers: res.headers as unknown as Record<string, unknown>,
+        };
       } catch (err) {
         lastError = err;
         if (attempt < MAX_RETRIES) {

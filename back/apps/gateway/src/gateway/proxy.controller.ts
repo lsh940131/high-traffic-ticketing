@@ -65,10 +65,15 @@ export class ProxyController {
         authorization: req.headers['authorization'],
         'x-user-id': req.headers['x-user-id'],
         'x-entry-token': req.headers['x-entry-token'],
+        // RT 쿠키 전파 (refresh/logout이 다운스트림에서 읽도록)
+        cookie: req.headers['cookie'],
         // 요청 상관관계 전파 (게이트웨이가 발급한 id)
         'x-request-id': (req as Request & { id?: string }).id,
       },
     });
+    // 다운스트림 Set-Cookie(로그인/refresh의 RT)를 클라이언트로 전달
+    const setCookie = (result.headers as Record<string, unknown> | undefined)?.['set-cookie'];
+    if (setCookie) res.setHeader('set-cookie', setCookie as string[]);
     res.status(result.status).json(result.data);
   }
 }

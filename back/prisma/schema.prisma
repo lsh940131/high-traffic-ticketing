@@ -46,12 +46,27 @@ model User {
   name         String
   email        String    @unique
   passwordHash String
-  orders       Order[]
+  orders        Order[]
+  refreshTokens RefreshToken[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
   @@map("users")
+}
+
+// ── refresh_token (RT: DB 저장·회전·폐기. 해시만 저장, 원문 X) ──
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String    @db.Uuid
+  tokenHash String    @unique // sha256(원문 RT)
+  expiresAt DateTime
+  revokedAt DateTime? // 회전·로그아웃·탈취 대응 시 폐기
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 // ── venue (공연장) ──────────────────────────────────────
