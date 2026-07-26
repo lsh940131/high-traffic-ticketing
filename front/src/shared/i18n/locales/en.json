@@ -133,5 +133,25 @@
     "home": "Home",
     "retry": "Try payment again",
     "rebook": "Book again"
+  },
+  "mypage": {
+    "title": "My bookings",
+    "count": "{{n}} total",
+    "empty": "No bookings yet.",
+    "orderNo": "Order {{no}}",
+    "won": "₩{{n}}",
+    "unit": "",
+    "cancelBtn": "Cancel",
+    "status": {
+      "confirmed": "Booked",
+      "watched": "Attended",
+      "cancelled": "Cancelled",
+      "pending": "Processing",
+      "failed": "Payment failed"
+    },
+    "cancelTitle": "Cancel this booking?",
+    "cancelBody": "Your seats will be released immediately.\nThis cannot be undone.",
+    "cancelConfirm": "Cancel booking",
+    "cancelBack": "Go back"
   }
 }

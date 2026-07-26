@@ -44,6 +44,10 @@ export interface OrderView {
   orderId: string;
   orderNo: string;
   concertName: string;
+  venueName: string;
+  startsAt: string;
+  endsAt: string;
+  posterUrl: string | null;
   status: 'PENDING' | 'CONFIRMED' | 'FAILED' | 'CANCELLED';
   paymentStatus: string | null;
   paymentFailCode: string | null;

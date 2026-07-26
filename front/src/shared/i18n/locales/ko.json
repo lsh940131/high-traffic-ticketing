@@ -133,5 +133,25 @@
     "home": "홈으로",
     "retry": "다시 결제하기",
     "rebook": "다시 예매하기"
+  },
+  "mypage": {
+    "title": "예매 내역",
+    "count": "총 {{n}}건",
+    "empty": "예매 내역이 없습니다.",
+    "orderNo": "주문 {{no}}",
+    "won": "{{n}}원",
+    "unit": "매",
+    "cancelBtn": "예매 취소",
+    "status": {
+      "confirmed": "예매완료",
+      "watched": "관람완료",
+      "cancelled": "취소됨",
+      "pending": "처리중",
+      "failed": "결제실패"
+    },
+    "cancelTitle": "예매를 취소하시겠어요?",
+    "cancelBody": "취소하면 좌석이 즉시 반환됩니다.\n이 작업은 되돌릴 수 없습니다.",
+    "cancelConfirm": "예매 취소",
+    "cancelBack": "돌아가기"
   }
 }

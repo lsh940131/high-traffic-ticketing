@@ -13,6 +13,7 @@ import QueuePage from '@/pages/QueuePage';
 import SeatSelectPage from '@/pages/SeatSelectPage';
 import OrderPage from '@/pages/OrderPage';
 import ResultPage from '@/pages/ResultPage';
+import MyPage from '@/pages/MyPage';
 
 const qc = new QueryClient();
 
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/concerts/:id/seats" element={<SeatSelectPage />} />
             <Route path="/concerts/:id/order" element={<OrderPage />} />
             <Route path="/orders/:orderId" element={<ResultPage />} />
+            <Route path="/mypage" element={<MyPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

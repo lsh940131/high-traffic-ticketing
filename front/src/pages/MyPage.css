@@ -1,0 +1,11 @@
+/* 04 · 마이페이지(M). AppBar + 예매 내역 리스트 + Footer. */
+.mypage-wrap {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 40px var(--space-6);
+  min-height: calc(100vh - 64px - 196px);
+}
+.mypage-title { font-size: 28px; font-weight: 700; color: var(--color-text); margin: 0; }
+.mypage-count { font-size: 13px; color: var(--color-text-muted); margin: var(--space-2) 0 var(--space-6); }
+.mypage-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.mypage-empty { color: var(--color-text-muted); padding: var(--space-8) 0; text-align: center; }
