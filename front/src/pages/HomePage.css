@@ -1,0 +1,22 @@
+/* 04 · Home. AppBar + content(제목·그리드) + Footer. 그리드 5/행(NOL 방식). */
+.home-content {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 40px var(--space-6);
+}
+.home-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 var(--space-6);
+}
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 데스크탑 5/행 */
+  gap: var(--space-6);
+}
+.home-muted { color: var(--color-text-muted); }
+
+/* 반응형: 태블릿 3/행, 모바일 2/행 */
+@media (max-width: 1100px) { .home-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .home-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); } }

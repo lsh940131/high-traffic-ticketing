@@ -1,72 +1,69 @@
-import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import AppHeader from '@/shared/ui/AppHeader';
+import { AppBar, ConcertCard, Footer, type BadgeTone } from '@/shared/ui';
 import { useConcerts } from '@/features/concert/hooks';
-import { formatDate, formatWon } from '@/shared/lib/format';
+import type { ConcertListItem } from '@/features/concert/api';
+import { formatDate } from '@/shared/lib/format';
+import './HomePage.css';
 
-// S0: 홈 = 공연 목록. (1차 구현 — Figma 스크린샷으로 스타일 정밀 조정 예정)
+// 상태 파생: 매진 > 오픈예정(opensAt 미래) > 예매중. (SCREENS.md 정렬·상태 규칙)
+type Status = 'booking' | 'openSoon' | 'soldout';
+function statusOf(c: ConcertListItem, now: number): Status {
+  if (c.soldOut) return 'soldout';
+  if (new Date(c.opensAt).getTime() > now) return 'openSoon';
+  return 'booking';
+}
+const TONE: Record<Status, BadgeTone> = {
+  booking: 'success',
+  openSoon: 'warning',
+  soldout: 'danger',
+};
+const LABEL_KEY: Record<Status, string> = {
+  booking: 'home.statusBooking',
+  openSoon: 'home.statusOpenSoon',
+  soldout: 'home.soldOut',
+};
+const RANK: Record<Status, number> = { booking: 0, openSoon: 1, soldout: 2 };
+
+// 04 · Home = 공연 목록. 상태 배지 + 제목 + 일시·장소. 정렬: 예매중→오픈예정→매진, 이름 asc.
 export default function HomePage() {
   const { t } = useTranslation();
   const { data, isLoading } = useConcerts();
 
+  const sorted = useMemo(() => {
+    if (!data) return [];
+    const now = Date.now();
+    return [...data]
+      .map((c) => ({ c, status: statusOf(c, now) }))
+      .sort((a, b) => RANK[a.status] - RANK[b.status] || a.c.name.localeCompare(b.c.name, 'ko'));
+  }, [data]);
+
   return (
     <div>
-      <AppHeader />
-      <main style={{ maxWidth: 1080, margin: '0 auto', padding: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 22, margin: '0 0 var(--space-6)' }}>{t('home.title')}</h1>
+      <AppBar />
+      <main className="home-content">
+        <h1 className="home-title">{t('home.title')}</h1>
         {isLoading || !data ? (
-          <p style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</p>
-        ) : data.length === 0 ? (
-          <p style={{ color: 'var(--color-text-muted)' }}>{t('home.empty')}</p>
+          <p className="home-muted">{t('common.loading')}</p>
+        ) : sorted.length === 0 ? (
+          <p className="home-muted">{t('home.empty')}</p>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-              gap: 'var(--space-6)',
-            }}
-          >
-            {data.map((c) => (
-              <Link
+          <div className="home-grid">
+            {sorted.map(({ c, status }) => (
+              <ConcertCard
                 key={c.id}
                 to={`/concerts/${c.id}`}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <div
-                  style={{
-                    aspectRatio: '3 / 4',
-                    borderRadius: 'var(--radius-card)',
-                    overflow: 'hidden',
-                    background: 'var(--color-surface-2)',
-                    marginBottom: 'var(--space-3)',
-                  }}
-                >
-                  {c.posterUrl && (
-                    <img
-                      src={c.posterUrl}
-                      alt={c.name}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  )}
-                </div>
-                <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{c.name}</div>
-                <div style={{ color: 'var(--color-text-muted)', fontSize: 13, marginTop: 4 }}>
-                  {c.venueName} · {formatDate(c.startsAt)}
-                </div>
-                <div style={{ fontSize: 13, marginTop: 4 }}>
-                  {c.soldOut ? (
-                    <span style={{ color: 'var(--color-danger)' }}>{t('home.soldOut')}</span>
-                  ) : c.minPrice != null ? (
-                    t('home.priceFrom', { price: formatWon(c.minPrice) })
-                  ) : (
-                    t('home.priceTbd')
-                  )}
-                </div>
-              </Link>
+                posterUrl={c.posterUrl}
+                title={c.name}
+                meta={`${formatDate(c.startsAt)} · ${c.venueName}`}
+                badge={{ tone: TONE[status], label: t(LABEL_KEY[status]) }}
+                posterPlaceholder={t('home.posterPlaceholder')}
+              />
             ))}
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

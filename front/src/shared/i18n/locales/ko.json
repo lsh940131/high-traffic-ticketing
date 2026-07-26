@@ -32,10 +32,11 @@
     "errPasswordMismatch": "비밀번호가 일치하지 않습니다."
   },
   "home": {
-    "title": "공연",
+    "title": "공연 예매",
+    "statusBooking": "예매중",
+    "statusOpenSoon": "오픈예정",
     "soldOut": "매진",
-    "priceFrom": "{{price}}원~",
-    "priceTbd": "가격 미정",
+    "posterPlaceholder": "포스터",
     "empty": "등록된 공연이 없습니다."
   }
 }

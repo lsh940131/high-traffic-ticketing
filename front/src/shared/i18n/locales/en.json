@@ -33,9 +33,10 @@
   },
   "home": {
     "title": "Concerts",
+    "statusBooking": "Booking",
+    "statusOpenSoon": "Opening soon",
     "soldOut": "Sold out",
-    "priceFrom": "From ₩{{price}}",
-    "priceTbd": "TBD",
+    "posterPlaceholder": "Poster",
     "empty": "No concerts available."
   }
 }

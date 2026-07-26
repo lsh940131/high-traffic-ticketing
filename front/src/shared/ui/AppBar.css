@@ -1,12 +1,17 @@
-/* AppBar — 상단 네비. Figma 02 AppBar(로고 좌 · 마이페이지+아바타 우, 높이 64, 하단 border). */
+/* AppBar — 상단 네비. bar는 풀폭(배경·border), 내용은 본문·푸터와 같은 1340 컨테이너로 정렬. */
 .appbar {
   height: 64px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.appbar__inner {
+  max-width: 1340px;
+  height: 100%;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-6);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
 }
 .appbar__logo {
   color: var(--color-primary);
@@ -21,14 +26,3 @@
   text-decoration: none;
 }
 .appbar__link:hover { color: var(--color-text); }
-
-/* 헤더 전용 아바타(원형 이니셜). 재사용처 없어 컴포넌트화 대신 인라인. */
-.appbar__avatar {
-  width: 36px; height: 36px;
-  flex: 0 0 auto;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: var(--radius-pill);
-  background: var(--badge-processing-bg);
-  color: var(--color-primary);
-  font-size: 14px; font-weight: 500;
-}
