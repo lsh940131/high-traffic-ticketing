@@ -118,5 +118,20 @@
     "expired": "좌석 점유 시간이 만료되었습니다. 다시 선택해주세요.",
     "empty": "주문 정보가 없습니다. 좌석을 다시 선택해주세요.",
     "backToDetail": "공연으로 돌아가기"
+  },
+  "result": {
+    "orderNo": "주문번호 {{no}}",
+    "processingHeading": "결제를 처리하고 있습니다",
+    "processingSub": "잠시만 기다려 주세요. 결과를 자동으로 확인합니다.",
+    "confirmedHeading": "예매가 완료되었습니다",
+    "mini": "{{concert}} · {{qty}}매 · {{amount}}원",
+    "failedHeading": "결제에 실패했습니다",
+    "failedSub": "좌석은 그대로 잡혀 있어요. 남은 시간 안에 다시 시도해 주세요.",
+    "expiredHeading": "결제 시간이 초과되었습니다",
+    "expiredSub": "좌석 점유가 해제되었습니다. 처음부터 다시 예매해 주세요.",
+    "viewMypage": "마이페이지에서 보기",
+    "home": "홈으로",
+    "retry": "다시 결제하기",
+    "rebook": "다시 예매하기"
   }
 }

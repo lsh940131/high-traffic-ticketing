@@ -118,5 +118,20 @@
     "expired": "Your seat hold expired. Please select again.",
     "empty": "No order info. Please select seats again.",
     "backToDetail": "Back to concert"
+  },
+  "result": {
+    "orderNo": "Order {{no}}",
+    "processingHeading": "Processing your payment",
+    "processingSub": "Please wait. We'll check the result automatically.",
+    "confirmedHeading": "Booking complete",
+    "mini": "{{concert}} · {{qty}} tickets · ₩{{amount}}",
+    "failedHeading": "Payment failed",
+    "failedSub": "Your seats are still held. Please try again within the time left.",
+    "expiredHeading": "Payment timed out",
+    "expiredSub": "Your seat hold was released. Please book again from the start.",
+    "viewMypage": "View in My page",
+    "home": "Home",
+    "retry": "Try payment again",
+    "rebook": "Book again"
   }
 }

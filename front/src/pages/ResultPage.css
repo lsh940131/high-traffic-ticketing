@@ -1,0 +1,8 @@
+/* 04 · 결제 결과(S5+R). AppBar + 중앙 StatusResult 카드. */
+.result-stage {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 120px var(--space-4) var(--space-8);
+}

@@ -32,3 +32,35 @@ export interface OrderResult {
 
 export const reserve = (ticketIds: string[]) =>
   api.post<OrderResult>('/reservations', { ticketIds }).then((r) => r.data);
+
+// 주문 조회(결과 폴링·마이페이지). status: PENDING/CONFIRMED/FAILED/CANCELLED.
+export interface OrderItem {
+  ticketId: string;
+  seatLabel: string;
+  grade: string;
+  price: number;
+}
+export interface OrderView {
+  orderId: string;
+  orderNo: string;
+  concertName: string;
+  status: 'PENDING' | 'CONFIRMED' | 'FAILED' | 'CANCELLED';
+  paymentStatus: string | null;
+  paymentFailCode: string | null;
+  failReason: string | null;
+  amount: number;
+  items: OrderItem[];
+  createdAt: string;
+}
+
+export const getOrder = (orderId: string) =>
+  api.get<OrderView>(`/orders/${orderId}`).then((r) => r.data);
+
+export const listOrders = () => api.get<OrderView[]>('/orders').then((r) => r.data);
+
+// 실패한 주문 재결제(카드 변경 등). 좌석 hold 유효할 때만. 만료 시 에러.
+export const retryPayment = (orderId: string) =>
+  api.post<OrderResult>(`/orders/${orderId}/retry`).then((r) => r.data);
+
+export const cancelOrder = (orderId: string) =>
+  api.post<OrderView>(`/orders/${orderId}/cancel`).then((r) => r.data);

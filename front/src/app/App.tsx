@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { refresh } from '@/features/auth/api';
 import { useAuthStore } from '@/features/auth/store';
 import ProtectedRoute from '@/features/auth/ProtectedRoute';
+import ScrollToTop from '@/app/ScrollToTop';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import HomePage from '@/pages/HomePage';
@@ -11,6 +12,7 @@ import DetailPage from '@/pages/DetailPage';
 import QueuePage from '@/pages/QueuePage';
 import SeatSelectPage from '@/pages/SeatSelectPage';
 import OrderPage from '@/pages/OrderPage';
+import ResultPage from '@/pages/ResultPage';
 
 const qc = new QueryClient();
 
@@ -33,6 +35,7 @@ export default function App() {
   return (
     <QueryClientProvider client={qc}>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -42,6 +45,7 @@ export default function App() {
             <Route path="/concerts/:id/queue" element={<QueuePage />} />
             <Route path="/concerts/:id/seats" element={<SeatSelectPage />} />
             <Route path="/concerts/:id/order" element={<OrderPage />} />
+            <Route path="/orders/:orderId" element={<ResultPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
