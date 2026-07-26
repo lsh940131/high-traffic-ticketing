@@ -48,9 +48,9 @@ High-Traffic Ticketing — 티켓 오픈 순간 트래픽 폭증을 견디는 �
 - [x] `COMPONENTS.md` 장부 운영 중(승격 현황·제외 항목 반영). 현재 02 마스터 15개.
 - [x] 화면 계획 확정: 인증 제외, 페이지 03/04 분할, 좌석/주문 상태 머신 정리(`SCREENS.md`).
 - [x] `03`(페이지 "03 · Screens - Login & Signup"): 로그인·회원가입(데스크탑 1440, 가운데 360 폼) + 회원가입 에러 상태. `Field`/`Checkbox` 등록.
-- [x] `04`(페이지 "04 · Screens - Home" = 홈): 콘서트 목록(데스크탑 **5×2=10개**, NOL 방식·페이지네이션 없음, vertical>row>FILL 그리드). 포스터 full-bleed 3:4(240×320). 02 마스터=home 크기(240×424). 하단 `Footer`(2컬럼+면책·저작권). `AppBar`/`Tab`/`ConcertCard`/`Avatar`/`Footer` 인스턴스.
+- [x] `04`(페이지 "04 · Screens - Home" = 홈): 콘서트 목록(데스크탑 **5×2=10개**, NOL 방식·페이지네이션 없음, vertical>row>FILL 그리드). 포스터 full-bleed 3:4(240×320). 02 마스터=home 크기(240×424). 하단 `Footer`(2컬럼+면책·저작권). `AppBar`/`ConcertCard`/`Avatar`/`Footer` 인스턴스. (카테고리 필터 `Tab`은 폐기.)
 - [x] **상세(P2, 04 페이지 `Detail` 31:289)**: 좌(포스터 300×400 + 정보 + 공연정보|판매정보 탭) / 우(BookingPanel: 캘린더+회차+예매하기, sticky). 캘린더·회차칩은 상세 전용(컴포넌트화 제외).
-- [x] **02 승격 정리**: 마스터 15개 확인. Button/Field/Checkbox/AppBar/Tab/ConcertCard/Avatar/StatusBadge/Footer ✅. 고아 `Pagination` 마스터 삭제. 남은 정리=StatusBadge 3개 마스터 variants 합치기(사용자).
+- [x] **02 승격 정리**: Button/Field/Checkbox/AppBar/ConcertCard/Avatar/StatusBadge/Footer ✅. 고아 `Pagination` 마스터 삭제. `Tab`(필터 칩)은 폐기. 남은 정리=StatusBadge 3개 마스터 variants 합치기(사용자).
 - [x] **대기열(S2)**: 2상태 그림(04 페이지, Detail 아래에 나란히). 대기중(순번·진행바·예상시간·이탈경고·나가기 ghost) / 입장가능(체크 헤딩·카운트다운·지금 입장 Button/primary). AppBar·Button/primary 재사용. 신규 후보=QueueProgress/ProgressBar/Button-ghost. ※ 입장가능 프레임 이름 리네임 필요(복제 흔적).
 - [x] **좌석선택(P3, 04 페이지 "좌석 선택" 42:128)**: 좌(구역맵: STAGE+FLOOR/1·2·3층 블록, 103 선택 → 하단 좌석 그리드 full-width, 상태색 3종(선택가능/선택됨/선택불가)+범례 — HELD는 실사처럼 UI 비노출, 백엔드 상태로만) / 우(예약 패널: 컨텍스트, 등급·잔여 4종 R석 선택, 선택좌석 칩 2/2, 1인 2매, 합계, 다음 Button/primary). 기준 공연장=인스파이어 아레나. 좌석 그리드 대표 크기 6행×20석. **`SeatTile`(seat/can·selected·disabled)·`ZoneBlock`(default·selected·disabled) variants 컴포넌트화 + P3 전체 적용 완료**(좌석 120·구역 22 인스턴스). 좌석 상태색: 선택가능(연회색)/선택됨(파랑)/선택불가(진회색).
 - 프레임 네이밍: S2/S3 프리픽스 없이 평범하게(예: "좌석 선택"). 캔버스 순서가 곧 플로우.

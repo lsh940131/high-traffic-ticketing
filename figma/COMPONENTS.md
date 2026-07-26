@@ -15,7 +15,7 @@
 - [x] `Field` — default / error (Field, Field - Error 마스터 존재)
 - [x] `Checkbox` — on / off
 - [x] `AppBar` — 로고 + 마이페이지 + 아바타 (Home·상세 공통 인스턴스)
-- [x] `Tab` — active / idle (필터 칩)
+- ~~`Tab`~~ — **폐기**: 홈 카테고리 필터(전체/콘서트/뮤지컬/스포츠)를 제거하면서 필터 칩 불필요 → 02 마스터·04 인스턴스 삭제. (상세의 공연정보|판매정보 탭은 별도 스타일, 상세에서 개별 구성.)
 - [x] `ConcertCard` — 포스터 + StatusBadge + 제목 + 일시·장소
 - [x] `Avatar`
 - [x] `StatusBadge` — **승격은 됐으나 정리 필요**: 같은 이름 `StatusBadge/booking` 마스터가 3개(28:64/65/66)로 쪼개져 있음 → variants(booking/openSoon/soldout)로 **Combine** + 이름 정정 필요(사용자 작업).
@@ -42,7 +42,7 @@
 | `Field` | atom | default / error (focus 추후) | label, placeholder, errorMsg | S-Login | ✅ |
 | `Checkbox` | atom | off / on | checked | S-Signup | ✅ |
 | `AppBar` | base | default | logo, user | Home | ✅ |
-| `Tab` | atom | active / idle | label, active | Home | ✅ |
+| ~~`Tab`~~ | — | (필터 칩, 폐기) | — | Home | 제외 |
 | `ConcertCard` | molecule | 배지 색으로 상태 표현(booking/openSoon/soldout) | poster, title, date, venue, status | Home | ✅ |
 | `Avatar` | atom | default | initials | Home | ✅ |
 | `Footer` | base | default | — (정적 정보) | Home | ✅ |
@@ -92,3 +92,4 @@
 - **마이페이지(M)** 그림(04 "마이페이지" 55:295): AppBar/Footer 자리 비움(세로 오토레이아웃, 사용자가 인스턴스 삽입). 본문=예매 내역 리스트 3건(예매완료/관람완료/취소됨 상태 섞음). 관람완료는 액션 없음(상세보기는 스코프 밖). 신규 후보 `BookingRow`. 핵심 데스크탑 화면 7종 완료.
 - **Modal/confirm**(확인 다이얼로그) 그림(59:511): scrim + 흰 다이얼로그(제목·본문·돌아가기/예매취소 2버튼). 예매 취소 재확인용. 신규 후보 `Modal/confirm`(Base 섹션)·`Button/danger`. scrim 투명도는 Figma에서 조정.
 - **2차 승격 완료(사용자)**: `StatusResult`(Feedback 섹션 신설)·`BookingRow`·`Modal/confirm`(Base)·`Button/ghost`·`Button/danger`(Actions). Figma 핵심 작업 일단락. 남은 정리=StatusBadge 3마스터 합치기(선택).
+- **`Tab`(필터 칩) 폐기**: 홈 카테고리 필터(전체/콘서트/뮤지컬/스포츠) 불필요 판단 → 02 마스터·04 인스턴스 삭제(사용자). 백엔드에 category 필드도 추가 안 함. front `shared/ui/Tab`도 제거. (상세의 공연정보|판매정보 탭은 별도 스타일이라 상세에서 개별 구성.)
