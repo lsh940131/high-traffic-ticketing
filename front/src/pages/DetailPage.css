@@ -1,0 +1,88 @@
+/* 04 · Detail. 좌(요약·탭) / 우(예매 패널 sticky) 2단. */
+.detail-wrap {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 40px var(--space-6);
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+/* ── 좌측 ── */
+.detail-title { font-size: 26px; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-6); }
+.detail-summary { display: flex; gap: var(--space-6); }
+.detail-poster {
+  width: 300px; height: 400px; flex: 0 0 auto;
+  border-radius: 12px; overflow: hidden;
+  background: var(--color-surface-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.detail-poster img { width: 100%; height: 100%; object-fit: cover; }
+.detail-poster-ph { color: var(--color-text-placeholder); font-size: 14px; }
+.detail-spec { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-2); }
+.detail-spec__row { font-size: 14px; color: var(--color-text); }
+.detail-spec__row b { color: var(--color-text-muted); font-weight: 500; margin-right: var(--space-2); }
+
+/* 탭 (밑줄형) */
+.detail-tabs { display: flex; gap: var(--space-6); border-bottom: 1px solid var(--color-border); margin-top: var(--space-8); }
+.detail-tab {
+  background: none; border: none; cursor: pointer;
+  padding: var(--space-3) 0; margin-bottom: -1px;
+  font-size: 15px; font-family: var(--font-sans);
+  color: var(--color-text-placeholder); border-bottom: 2px solid transparent;
+}
+.detail-tab--active { color: var(--color-text); font-weight: 600; border-bottom-color: var(--color-primary); }
+
+.detail-body { margin-top: var(--space-6); }
+.detail-info-img { width: 100%; border-radius: 12px; display: block; margin-bottom: var(--space-4); }
+.detail-info-empty {
+  background: var(--color-surface-2); border-radius: 12px;
+  padding: 80px var(--space-6); text-align: center; color: var(--color-text-placeholder);
+}
+
+/* 판매정보 마크다운 */
+.detail-md { color: var(--color-text); font-size: 14px; line-height: 1.7; }
+.detail-md h2 { font-size: 17px; margin: var(--space-6) 0 var(--space-3); }
+.detail-md h2:first-child { margin-top: 0; }
+.detail-md ul { padding-left: var(--space-4); }
+.detail-md table { border-collapse: collapse; width: 100%; margin: var(--space-3) 0; }
+.detail-md th, .detail-md td {
+  border: 1px solid var(--color-border); padding: var(--space-2) var(--space-3);
+  text-align: left; font-size: 13px;
+}
+.detail-md th { background: var(--color-surface-2); font-weight: 600; }
+
+/* ── 우측 예매 패널 (sticky) ── */
+.booking-panel {
+  position: sticky; top: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.booking-panel__label { font-size: 14px; font-weight: 600; color: var(--color-text); }
+.booking-panel__remain { font-size: 12px; color: var(--color-text-muted); }
+
+/* react-day-picker 토큰 테마 */
+.booking-panel .rdp-root {
+  --rdp-accent-color: var(--color-primary);
+  --rdp-accent-background-color: var(--badge-processing-bg);
+  --rdp-day-width: 36px;
+  --rdp-day-height: 36px;
+  --rdp-day_button-width: 36px;
+  --rdp-day_button-height: 36px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text);
+}
+.booking-panel .rdp-day_button { color: var(--color-text); }
+.booking-panel .rdp-disabled { color: var(--color-text-placeholder); opacity: 0.5; }
+
+/* 반응형: 좁아지면 1단, 패널은 아래로 */
+@media (max-width: 900px) {
+  .detail-wrap { grid-template-columns: 1fr; }
+  .detail-summary { flex-direction: column; }
+  .booking-panel { position: static; }
+}

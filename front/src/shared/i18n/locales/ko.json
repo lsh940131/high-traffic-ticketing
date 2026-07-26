@@ -38,5 +38,22 @@
     "soldOut": "매진",
     "posterPlaceholder": "포스터",
     "empty": "등록된 공연이 없습니다."
+  },
+  "detail": {
+    "venue": "장소",
+    "period": "공연기간",
+    "age": "관람연령",
+    "price": "가격",
+    "notice": "유의사항",
+    "tabInfo": "공연정보",
+    "tabSale": "판매정보",
+    "infoEmpty": "등록된 공연 정보 이미지가 없습니다.",
+    "watchDate": "관람일",
+    "remainStanding": "스탠딩",
+    "remainSeated": "지정석",
+    "seatUnit": "석",
+    "book": "예매하기",
+    "soldOut": "매진",
+    "gradeStanding": "스탠딩"
   }
 }

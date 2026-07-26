@@ -7,6 +7,7 @@ import ProtectedRoute from '@/features/auth/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import HomePage from '@/pages/HomePage';
+import DetailPage from '@/pages/DetailPage';
 
 const qc = new QueryClient();
 
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/concerts/:id" element={<DetailPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

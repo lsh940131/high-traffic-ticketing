@@ -38,5 +38,22 @@
     "soldOut": "Sold out",
     "posterPlaceholder": "Poster",
     "empty": "No concerts available."
+  },
+  "detail": {
+    "venue": "Venue",
+    "period": "Dates",
+    "age": "Age limit",
+    "price": "Price",
+    "notice": "Notice",
+    "tabInfo": "Details",
+    "tabSale": "Booking info",
+    "infoEmpty": "No detail images.",
+    "watchDate": "Date",
+    "remainStanding": "Standing",
+    "remainSeated": "Seated",
+    "seatUnit": "",
+    "book": "Book now",
+    "soldOut": "Sold out",
+    "gradeStanding": "Standing"
   }
 }
