@@ -5,6 +5,7 @@ import { refresh } from '@/features/auth/api';
 import { useAuthStore } from '@/features/auth/store';
 import ProtectedRoute from '@/features/auth/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
+import SignupPage from '@/pages/SignupPage';
 import HomePage from '@/pages/HomePage';
 
 const qc = new QueryClient();
@@ -30,6 +31,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
           </Route>
