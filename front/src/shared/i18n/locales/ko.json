@@ -72,5 +72,29 @@
     "expiredHeading": "대기가 만료되었습니다",
     "expiredGuide": "다시 대기열에 입장해 주세요.",
     "reenter": "다시 대기하기"
+  },
+  "seat": {
+    "title": "좌석 선택",
+    "venueSub": "구역을 고르면 좌석이 펼쳐집니다 · 1인 최대 2매",
+    "floorStandingBlock": "FLOOR · 스탠딩",
+    "floorFLOOR": "스탠딩",
+    "floor1F": "1층",
+    "floor2F": "2층",
+    "floor3F": "3층",
+    "gridHeaderSeat": "선택 구역 · {{floor}} {{block}}구역 ({{grade}}석)",
+    "gridEmpty": "구역을 선택하면 좌석이 표시됩니다.",
+    "standingPick": "스탠딩 매수 선택",
+    "legendCan": "선택가능",
+    "legendSel": "선택됨",
+    "legendDis": "선택 불가",
+    "gradesH": "등급 · 잔여",
+    "remain": "잔여 {{n}}",
+    "seatsH": "선택한 좌석 ({{n}}/2)",
+    "note": "⚠ 1인 최대 2매까지 선택할 수 있습니다.",
+    "standingLine": "스탠딩 · {{n}}매",
+    "total": "합계 ({{n}}매)",
+    "next": "다음 (주문 확인)",
+    "timerNote": "다음 단계로 넘어가면 7분 점유 타이머가 시작됩니다.",
+    "gradeStanding": "스탠딩"
   }
 }

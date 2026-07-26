@@ -72,5 +72,29 @@
     "expiredHeading": "Your queue session expired",
     "expiredGuide": "Please join the queue again.",
     "reenter": "Join again"
+  },
+  "seat": {
+    "title": "Select seats",
+    "venueSub": "Pick a zone to reveal seats · up to 2 per person",
+    "floorStandingBlock": "FLOOR · Standing",
+    "floorFLOOR": "Standing",
+    "floor1F": "1F",
+    "floor2F": "2F",
+    "floor3F": "3F",
+    "gridHeaderSeat": "Zone · {{floor}} {{block}} ({{grade}})",
+    "gridEmpty": "Select a zone to see seats.",
+    "standingPick": "Choose standing quantity",
+    "legendCan": "Available",
+    "legendSel": "Selected",
+    "legendDis": "Unavailable",
+    "gradesH": "Grade · Remaining",
+    "remain": "{{n}} left",
+    "seatsH": "Selected seats ({{n}}/2)",
+    "note": "⚠ Up to 2 seats per person.",
+    "standingLine": "Standing · {{n}}",
+    "total": "Total ({{n}})",
+    "next": "Next (Order)",
+    "timerNote": "A 7-minute hold timer starts on the next step.",
+    "gradeStanding": "Standing"
   }
 }

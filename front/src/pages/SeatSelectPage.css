@@ -1,0 +1,105 @@
+/* 04 · 좌석 선택(P3). 좌(구역맵→좌석그리드→범례) / 우(예약 패널 sticky). */
+.seat-wrap {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+.seat-title { font-size: 28px; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-6); }
+.seat-cols { display: grid; grid-template-columns: 1fr 300px; gap: var(--space-6); align-items: start; }
+
+/* ── 좌: 좌석맵 카드 ── */
+.seatmap-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+}
+.seatmap-card__venue { font-size: 15px; font-weight: 600; color: var(--color-text); }
+.seatmap-card__sub { font-size: 12px; color: var(--color-text-muted); margin: 4px 0 var(--space-6); }
+
+.seat-stage {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  text-align: center;
+  font-size: 12px; font-weight: 500; letter-spacing: 4px;
+  padding: var(--space-2); border-radius: var(--radius);
+  margin-bottom: var(--space-6);
+}
+
+.seat-zones { display: flex; flex-direction: column; gap: var(--space-4); }
+.seat-tier__label { font-size: 11px; color: var(--color-text-muted); margin-bottom: 6px; }
+.seat-tier__blocks { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+.seat-floor { display: flex; justify-content: center; }
+.seat-floor .zoneblock { min-width: 200px; }
+
+/* 좌석 그리드 */
+.seat-grid-header { font-size: 13px; font-weight: 500; color: var(--color-text); margin: var(--space-6) 0 var(--space-3); }
+.seat-grid { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.seat-grid__row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.seat-empty { color: var(--color-text-placeholder); font-size: 13px; text-align: center; padding: var(--space-8) 0; }
+
+/* 스탠딩 수량 */
+.seat-standing { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-6) 0; }
+.seat-qty { display: flex; align-items: center; gap: var(--space-4); }
+.seat-qty__btn {
+  width: 40px; height: 40px; border-radius: var(--radius);
+  border: 1px solid var(--color-border-strong); background: var(--color-surface);
+  color: var(--color-text); font-size: 20px; cursor: pointer;
+}
+.seat-qty__btn:disabled { color: var(--color-text-placeholder); cursor: not-allowed; }
+.seat-qty__n { font-size: 22px; font-weight: 700; min-width: 32px; text-align: center; color: var(--color-text); }
+
+/* 범례 */
+.seat-legend { display: flex; gap: var(--space-6); margin-top: var(--space-6); }
+.seat-legend__item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-muted); }
+.seat-legend__sw { width: 16px; height: 16px; border-radius: 4px; }
+.seat-legend__sw--can { background: var(--color-surface-2); }
+.seat-legend__sw--sel { background: var(--color-primary); }
+.seat-legend__sw--dis { background: var(--color-disabled); }
+
+/* ── 우: 예약 패널 ── */
+.book-panel {
+  position: sticky; top: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.book-ctx { background: var(--color-bg); border-radius: 10px; padding: var(--space-3); }
+.book-ctx__title { font-size: 13px; font-weight: 600; color: var(--color-text); }
+.book-ctx__meta { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+
+.book-h { font-size: 12px; font-weight: 500; color: var(--color-text-muted); }
+.book-grades { display: flex; flex-direction: column; gap: 2px; }
+.book-grade {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: var(--space-3); border-radius: var(--radius);
+  border: 1px solid transparent; cursor: pointer; text-align: left; background: none;
+  font-family: var(--font-sans);
+}
+.book-grade:hover { background: var(--color-surface-2); }
+.book-grade--active { border-color: var(--color-primary); background: var(--badge-processing-bg); }
+.book-grade--soldout { opacity: 0.5; cursor: not-allowed; }
+.book-grade__g { font-size: 13px; color: var(--color-text); }
+.book-grade__p { font-size: 12px; color: var(--color-text-muted); }
+
+.book-chips { display: flex; flex-direction: column; gap: 6px; }
+.book-chip {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--color-surface-2); border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3); font-size: 12px; color: var(--color-text);
+}
+.book-chip__x { background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: 12px; }
+
+.book-note { font-size: 12px; color: var(--color-text-muted); }
+.book-divider { height: 1px; background: var(--color-border); }
+.book-total { display: flex; justify-content: space-between; align-items: baseline; }
+.book-total__label { font-size: 13px; color: var(--color-text-muted); }
+.book-total__amt { font-size: 20px; font-weight: 700; color: var(--color-text); }
+.book-timer-note { font-size: 11px; color: var(--color-text-placeholder); text-align: center; }
+
+@media (max-width: 900px) {
+  .seat-cols { grid-template-columns: 1fr; }
+  .book-panel { position: static; }
+}
