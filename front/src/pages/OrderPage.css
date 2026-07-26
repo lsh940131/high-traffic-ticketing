@@ -1,0 +1,67 @@
+/* 04 · 주문 확인(P4). 좌(예매정보·금액·약관) / 우(결제 패널 sticky). */
+.order-wrap {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+.order-title { font-size: 28px; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-6); }
+.order-cols { display: grid; grid-template-columns: 1fr 320px; gap: var(--space-6); align-items: start; }
+
+.order-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+}
+.order-card__h { font-size: 16px; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-4); }
+.order-card__h--mt { margin-top: var(--space-8); }
+
+/* 예매 정보 요약 */
+.order-summary { display: flex; gap: var(--space-4); }
+.order-summary__poster { width: 90px; height: 120px; flex: 0 0 auto; border-radius: 8px; overflow: hidden; background: var(--color-surface-2); }
+.order-summary__poster img { width: 100%; height: 100%; object-fit: cover; }
+.order-summary__title { font-size: 15px; font-weight: 600; color: var(--color-text); }
+.order-summary__meta { font-size: 13px; color: var(--color-text-muted); margin-top: 4px; }
+.order-summary__seat { font-size: 13px; font-weight: 500; color: var(--color-primary); margin-top: 8px; }
+
+/* 결제 금액 */
+.order-prices { display: flex; flex-direction: column; gap: var(--space-3); }
+.order-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--color-text); }
+.order-row__l { color: var(--color-text-muted); }
+.order-divider { height: 1px; background: var(--color-border); margin: var(--space-2) 0; }
+.order-row--total { align-items: baseline; }
+.order-row--total .order-row__l { font-size: 15px; font-weight: 700; color: var(--color-text); }
+.order-row--total .order-row__v { font-size: 20px; font-weight: 700; color: var(--color-text); }
+
+/* 약관 */
+.order-terms { display: flex; flex-direction: column; gap: var(--space-3); }
+.order-terms__all { padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); }
+.order-terms__all .checkbox__label { font-weight: 600; }
+
+/* 우: 결제 패널 */
+.pay-panel {
+  position: sticky; top: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.pay-timer {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--badge-warning-bg); color: var(--badge-warning-fg);
+  border-radius: var(--radius); padding: var(--space-3);
+  font-size: 13px; font-weight: 500;
+}
+.pay-timer__t { font-size: 15px; font-weight: 700; }
+.pay-sum__t { font-size: 14px; font-weight: 600; color: var(--color-text); }
+.pay-sum__s { font-size: 13px; color: var(--color-text-muted); margin-top: 2px; }
+.pay-total { display: flex; justify-content: space-between; align-items: baseline; }
+.pay-total__l { font-size: 13px; font-weight: 500; color: var(--color-text-muted); }
+.pay-total__v { font-size: 20px; font-weight: 700; color: var(--color-text); }
+.pay-note { font-size: 11px; color: var(--color-text-placeholder); text-align: center; }
+
+@media (max-width: 900px) {
+  .order-cols { grid-template-columns: 1fr; }
+  .pay-panel { position: static; }
+}

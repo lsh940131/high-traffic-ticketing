@@ -20,3 +20,15 @@ export const holdSeats = (body: HoldRequest) =>
 
 export const releaseHold = (ticketIds: string[]) =>
   api.post('/reservations/hold/release', { ticketIds }).then((r) => r.data);
+
+// 예매 생성(주문). 선점한 ticketIds로 주문(PENDING) + Outbox. 결제는 비동기 → 결과 폴링.
+export interface OrderResult {
+  orderId: string;
+  orderNo: string;
+  amount: number;
+  status: string; // PENDING
+  ticketIds: string[];
+}
+
+export const reserve = (ticketIds: string[]) =>
+  api.post<OrderResult>('/reservations', { ticketIds }).then((r) => r.data);

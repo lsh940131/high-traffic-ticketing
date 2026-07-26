@@ -8,7 +8,6 @@ export function buildSalesInfo(opts: { venueName: string; ageLimit: string | nul
 - **고객문의** 1600-0000
 - **공연장소** ${venueName}
 - **관람등급** ${ageLimit ?? '전체 관람가'}
-- **예매수수료** 장당 2,000원
 - **배송료** 현장수령 무료 (배송 불가)
 
 ## 예매취소조건
@@ -18,7 +17,7 @@ export function buildSalesInfo(opts: { venueName: string; ageLimit: string | nul
 | 취소 시점 | 취소수수료 |
 | --- | --- |
 | 예매 후 7일 이내 | 없음 |
-| 예매 후 8일 ~ 관람 10일 전 | 장당 4,000원 (티켓금액의 10% 한도) |
+| 예매 후 8일 ~ 관람 10일 전 | 티켓금액의 10% |
 | 관람일 9~7일 전 | 티켓금액의 10% |
 | 관람일 6~3일 전 | 티켓금액의 20% |
 | 관람일 2~1일 전 | 티켓금액의 30% |

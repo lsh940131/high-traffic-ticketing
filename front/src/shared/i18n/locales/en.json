@@ -96,5 +96,27 @@
     "next": "Next (Order)",
     "timerNote": "A 7-minute hold timer starts on the next step.",
     "gradeStanding": "Standing"
+  },
+  "order": {
+    "title": "Order",
+    "hInfo": "Booking info",
+    "hPrice": "Payment",
+    "hTerms": "Agreements",
+    "rowTicket": "Tickets ({{unit}} × {{qty}})",
+    "rowShip": "Delivery (on-site pickup)",
+    "rowTotal": "Total",
+    "won": "₩{{n}}",
+    "agreeAll": "Agree to all",
+    "term1": "[Required] I agree to the booking & cancellation policy",
+    "term2": "[Required] I agree to the collection & use of personal data",
+    "term3": "[Required] I agree to third-party provision of personal data",
+    "holdTimer": "Time left to pay",
+    "finalTotal": "Final total",
+    "pay": "Pay",
+    "note": "Pressing Pay requests your booking; we'll show you the result.",
+    "unit": "",
+    "expired": "Your seat hold expired. Please select again.",
+    "empty": "No order info. Please select seats again.",
+    "backToDetail": "Back to concert"
   }
 }
