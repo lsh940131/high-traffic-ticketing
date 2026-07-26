@@ -15,5 +15,4 @@ export { default as SeatTile } from './SeatTile';
 export type { SeatState } from './SeatTile';
 export { default as ZoneBlock } from './ZoneBlock';
 export type { ZoneState } from './ZoneBlock';
-export { default as LanguageToggle } from './LanguageToggle';
-export { default as ThemeToggle } from './ThemeToggle';
+export { default as SettingsModal } from './SettingsModal';

@@ -1,0 +1,45 @@
+/* SettingsModal — 테마·언어 설정 경량 모달. ConfirmDialog와 같은 scrim 패턴, 토큰 통일. */
+.settings__scrim {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-4);
+  z-index: 100;
+}
+.settings {
+  width: 100%; max-width: 360px;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+  display: flex; flex-direction: column; gap: var(--space-6);
+}
+.settings__head { display: flex; align-items: center; justify-content: space-between; }
+.settings__title { font-size: 17px; font-weight: 700; color: var(--color-text); margin: 0; }
+.settings__x {
+  background: none; border: none; cursor: pointer;
+  color: var(--color-text-muted); font-size: 16px; line-height: 1; padding: 4px;
+}
+.settings__group { display: flex; flex-direction: column; gap: var(--space-2); }
+.settings__label { font-size: var(--fs-caption); font-weight: 500; color: var(--color-text-muted); }
+
+/* 세그먼트 (pill 그룹, Tab/Badge 톤 통일) */
+.seg { display: flex; gap: 6px; }
+.seg__btn {
+  flex: 1;
+  height: 36px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.seg__btn:hover { background: var(--color-surface-2); }
+.seg__btn--active {
+  background: var(--badge-processing-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}

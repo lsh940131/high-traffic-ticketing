@@ -4,7 +4,19 @@
     "login": "로그인",
     "logout": "로그아웃",
     "mypage": "마이페이지",
+    "settings": "설정",
     "loading": "불러오는 중…"
+  },
+  "settings": {
+    "title": "설정",
+    "close": "닫기",
+    "theme": "테마",
+    "theme_system": "시스템",
+    "theme_light": "라이트",
+    "theme_dark": "다크",
+    "language": "언어",
+    "lang_ko": "한국어",
+    "lang_en": "English"
   },
   "auth": {
     "loginTitle": "로그인",
