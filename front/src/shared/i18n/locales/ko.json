@@ -55,5 +55,22 @@
     "book": "예매하기",
     "soldOut": "매진",
     "gradeStanding": "스탠딩"
+  },
+  "queue": {
+    "entering": "대기열 입장 중…",
+    "waitingHeading": "대기 중입니다",
+    "rankLabel": "내 앞에 대기 중 (명)",
+    "eta": "예상 대기시간 약 {{min}}분",
+    "guideWaiting": "순서가 되면 자동으로 입장됩니다. 창을 닫지 마세요.",
+    "warnWaiting": "⚠ 새로고침하거나 창을 닫으면 대기 순번이 초기화됩니다.",
+    "leave": "대기 포기하고 나가기",
+    "readyHeading": "입장하실 차례입니다",
+    "remainLabel": "남은 시간 · 미입장 시 재대기",
+    "guideReady": "입장 후 좌석 선택으로 이동합니다.",
+    "warnReady": "⚠ 시간 내 입장하지 않으면 대기가 취소됩니다.",
+    "enterNow": "지금 입장",
+    "expiredHeading": "대기가 만료되었습니다",
+    "expiredGuide": "다시 대기열에 입장해 주세요.",
+    "reenter": "다시 대기하기"
   }
 }

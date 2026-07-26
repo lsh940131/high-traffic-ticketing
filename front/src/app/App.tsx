@@ -8,6 +8,7 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import HomePage from '@/pages/HomePage';
 import DetailPage from '@/pages/DetailPage';
+import QueuePage from '@/pages/QueuePage';
 
 const qc = new QueryClient();
 
@@ -36,6 +37,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/concerts/:id" element={<DetailPage />} />
+            <Route path="/concerts/:id/queue" element={<QueuePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

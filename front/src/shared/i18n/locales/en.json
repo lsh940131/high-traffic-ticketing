@@ -55,5 +55,22 @@
     "book": "Book now",
     "soldOut": "Sold out",
     "gradeStanding": "Standing"
+  },
+  "queue": {
+    "entering": "Entering queue…",
+    "waitingHeading": "You're in the queue",
+    "rankLabel": "people ahead of you",
+    "eta": "Est. wait ~{{min}} min",
+    "guideWaiting": "You'll be admitted automatically. Please keep this window open.",
+    "warnWaiting": "⚠ Refreshing or closing the window resets your position.",
+    "leave": "Leave the queue",
+    "readyHeading": "It's your turn",
+    "remainLabel": "Time left · you'll requeue if you miss it",
+    "guideReady": "You'll move to seat selection after entering.",
+    "warnReady": "⚠ Your spot is cancelled if you don't enter in time.",
+    "enterNow": "Enter now",
+    "expiredHeading": "Your queue session expired",
+    "expiredGuide": "Please join the queue again.",
+    "reenter": "Join again"
   }
 }

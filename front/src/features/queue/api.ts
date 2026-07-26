@@ -1,11 +1,14 @@
 import { api } from '@/shared/api/client';
 import type { QueueStatus, ReservationResult, Seat } from '@/shared/types';
 
-export const enterQueue = (eventId: string) =>
-  api.post<QueueStatus>(`/queue/${eventId}/enter`).then((r) => r.data);
+export const enterQueue = (concertId: string) =>
+  api.post<QueueStatus>(`/queue/${concertId}/enter`).then((r) => r.data);
 
-export const getQueueStatus = (eventId: string) =>
-  api.get<QueueStatus>(`/queue/${eventId}/status`).then((r) => r.data);
+export const getQueueStatus = (concertId: string) =>
+  api.get<QueueStatus>(`/queue/${concertId}/status`).then((r) => r.data);
+
+export const leaveQueue = (concertId: string) =>
+  api.post<{ ok: boolean }>(`/queue/${concertId}/leave`).then((r) => r.data);
 
 export const getSeats = (eventId: string) =>
   api.get<Seat[]>(`/events/${eventId}/seats`).then((r) => r.data);
