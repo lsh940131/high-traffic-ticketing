@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/features/auth/store';
 import { useLogout } from '@/features/auth/hooks';
-import Avatar from './Avatar';
 import Button from './Button';
 import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
@@ -26,7 +25,11 @@ export default function AppBar() {
         <Link to="/mypage" className="appbar__link">
           {t('common.mypage')}
         </Link>
-        {user && <Avatar name={user.name} />}
+        {user && (
+          <span className="appbar__avatar" aria-hidden>
+            {(user.name.trim()[0] ?? 'U').toUpperCase()}
+          </span>
+        )}
         {user && (
           <Button
             variant="ghost"

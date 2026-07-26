@@ -5,7 +5,6 @@ export { default as Checkbox } from './Checkbox';
 export { default as Badge } from './Badge';
 export type { BadgeTone } from './Badge';
 export { default as Tab } from './Tab';
-export { default as Avatar } from './Avatar';
 export { default as ConcertCard } from './ConcertCard';
 export { default as AppBar } from './AppBar';
 export { default as Footer } from './Footer';
