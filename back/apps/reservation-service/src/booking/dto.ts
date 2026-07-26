@@ -78,6 +78,14 @@ export class OrderViewDto {
   orderId!: string;
   orderNo!: string;
   concertName!: string;
+  /** 공연장명 */
+  venueName!: string;
+  /** 공연 시작 일시 */
+  startsAt!: Date;
+  /** 공연 종료 일시 */
+  endsAt!: Date;
+  /** 포스터 이미지 URL */
+  posterUrl!: string | null;
   /** 주문 상태: PENDING/CONFIRMED/FAILED/CANCELLED */
   status!: string;
   /** 결제 상태: PENDING/APPROVED/FAILED (없으면 null) */

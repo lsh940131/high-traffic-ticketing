@@ -349,7 +349,15 @@ export class BookingService implements OnModuleInit {
     const o = await this.prisma.order.findFirst({
       where: { id: orderId, userId, deletedAt: null },
       include: {
-        concert: { select: { name: true } },
+        concert: {
+          select: {
+            name: true,
+            startsAt: true,
+            endsAt: true,
+            posterUrl: true,
+            venue: { select: { name: true } },
+          },
+        },
         payment: { select: { status: true, failCode: true } },
         items: {
           include: {
@@ -373,7 +381,15 @@ export class BookingService implements OnModuleInit {
       where: { userId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: {
-        concert: { select: { name: true } },
+        concert: {
+          select: {
+            name: true,
+            startsAt: true,
+            endsAt: true,
+            posterUrl: true,
+            venue: { select: { name: true } },
+          },
+        },
         payment: { select: { status: true, failCode: true } },
         items: {
           include: {
@@ -396,6 +412,10 @@ export class BookingService implements OnModuleInit {
       orderId: o.id,
       orderNo: o.orderNo,
       concertName: o.concert.name,
+      venueName: o.concert.venue.name,
+      startsAt: o.concert.startsAt,
+      endsAt: o.concert.endsAt,
+      posterUrl: o.concert.posterUrl,
       status: o.status,
       paymentStatus: o.payment?.status ?? null,
       paymentFailCode: o.payment?.failCode ?? null,
