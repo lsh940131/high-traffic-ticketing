@@ -20,7 +20,7 @@ High-Traffic Ticketing — 티켓 오픈 순간 트래픽 폭증을 견디는 �
 - `COMMIT_CONVENTION.md` — 커밋 메시지 양식.
 - `back/docs/transactions.md` — 트랜잭션 처리 방침(현재 plain Prisma).
 - `infra/k8s/README-dev.md` — **dev(k3s 노트북) 배포·부하 테스트 작업 문서.** 레지스트리 배포 결정 배경 + 런북 + 현재 진행 상태(재개 지점). k3s 배포 작업 시 먼저 읽을 것.
-- `infra/k8s/README-pc.md` — **PC 단일 노드 큰 부하·스케일아웃 라이브 시연 계획.** 노트북서 못 뽑은 수평 확장 곡선·HPA를 자원 넉넉한 PC로 보여주는 다음 단계.
+- `infra/k8s/README-pc.md` — **PC 단일 노드(k3d) 스케일아웃·HPA 런북.** 노트북서 못 뽑은 수평 확장 곡선·HPA를 PC에서 수행 완료(2026-07-27). 수치는 `infra/loadtest/RESULTS.md` 환경 B.
 - `figma/CLAUDE.md` — 디자인 작업 문맥.
 
 ## ✅ 커밋 메시지
