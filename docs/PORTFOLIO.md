@@ -5,23 +5,34 @@
 
 ## 이력서 붙여넣기용 (3줄)
 - Redis Sorted Set 기반 **가상 대기열**과 입장 토큰(JWT)으로 백엔드 유입량을 정원만큼 제어해 트래픽 스파이크를 흡수.
-- Redis **Lua 원자 연산 + 분산락**으로 재고 동시성을 제어해 좌석 오버셀(초과 판매)을 차단, DB 유니크 제약으로 2차 방어.
-- **Kafka** 비동기 예매 파이프라인으로 결제·DB I/O를 분리(load leveling), **k6 부하 테스트 + Grafana**로 성능을 수치 검증. K8s(Kustomize)로 local/dev/AWS 동일 배포.
+- Redis **Lua 원자 연산**(1차) + **`ticket.status` 조건부 UPDATE**(2차) 2층 방어로 재고 동시성을 제어, k6 부하 테스트에서 **오버셀 0** 검증.
+- **Kafka + 트랜잭셔널 아웃박스**로 결제·DB I/O를 분리(load leveling), K8s(Kustomize)로 환경별 배포. 부하 테스트로 **수평 확장 3.76배**를 수치 증명.
+
+## 수치 (측정값 · 근거: `infra/loadtest/RESULTS.md`)
+- **오버셀 0** — 이중 CONFIRMED 0건. 대기열 게이팅을 **제거하고** 재고에 직접 몰아붙여도 0.
+- **수평 확장 3.76배** — queue-service 1→6 replica에서 494 → 1,858 rps, 왕복 p95 8.64s → 607ms(14배).
+- **HPA 자동 스케일** — 부하 40초 만에 감지, gateway는 6파드/67%에서 스스로 균형점 안착.
+- **한계까지 규명** — 12스레드 단일 노드 천장 ≈ 1,800 rps. 그 이상은 파드를 늘려도 처리량이 안 는다.
 
 ## 강조 포인트 (면접 대비)
 - **왜 대기열인가**: DB/앱을 직접 때리지 않게 하는 댐. ZRANK로 O(log N) 순번, FIFO 공정성.
 - **왜 Redis Lua인가**: check-then-act 경합 제거. 비관적 락의 커넥션 고갈/데드락 회피.
 - **왜 Kafka인가**: 요청과 확정 분리. 파티션 수 = 처리 병렬도. 멱등성으로 at-least-once 대응.
-- **환경 전략**: base manifest 1개 + Kustomize overlay로 local→dev(k3s 노트북)→AWS(EKS+ElastiCache/MSK/RDS) 차이만 덮어씀.
+- **환경 전략**: base manifest 1개 + Kustomize overlay로 local→dev(k3s 노트북)→pc(k3d 12스레드) 차이만 덮어씀. AWS(EKS+ElastiCache/MSK/RDS) overlay는 작성만 하고 미검증.
 - **의도적 스코프 컷**: PG 결제 mock, 멀티리전 제외 — "트래픽 처리" 핵심에 집중(README에 명시).
-- **부하 검증은 k3s에서, AWS는 defer**: 오버셀 0·p95 latency 증명은 무료인 k3s 노트북에서 완료하고, EKS는 비용 대비 오버라 *필요 시 짧게 재현*(관리형 전환 + HPA/노드 오토스케일 시연). 배포 파이프라인은 레지스트리 push 모델로 통일해 EKS+ECR로 그대로 이전 가능. (근거·런북: `infra/k8s/README-dev.md`)
+- **측정을 위해 하드웨어를 바꾼 판단**: 노트북 4코어에선 파드를 늘려도 같은 CPU를 나눠 쓸 뿐이라 수평 확장 곡선이 안 나왔다. 12스레드 PC로 클러스터를 옮기고 **노트북을 부하생성기로 뒤집어** 측정을 물리 분리. 부하생성기가 먼저 한계에 닿으면 오측정이므로 **생성기 천장부터 재고**(k6 128%/400% = 여유 3배) 본 측정에 들어갔다.
+- **부하 테스트가 실제 버그를 두 번 잡음** — 이 프로젝트에서 가장 얘기할 거리가 많은 부분:
+  1. `holdStanding`이 후보 좌석을 31개만 조회해 동시 구매자가 같은 좌석만 노리던 문제 → 후보창 확대+무작위화로 **동시 hold 21 → 934**
+  2. **k8s Service(L4) + HTTP keep-alive**로 스케일아웃한 파드가 트래픽을 못 받던 문제. 커넥션은 맺는 순간에만 파드가 정해지는데 keep-alive로 재사용되니 새 파드가 계속 논다 → 커넥션 풀에 수명 부여로 **동일 파드 수에서 +41%**
+- **HPA의 한계도 확인**: HPA는 파드당 CPU 사용률만 보므로, 노드 천장에 닿아 늘려도 처리량이 안 느는 상황을 감지하지 못한다. 실제로 max까지 증식했지만 6파드 이후로는 노드 CPU만 올랐다.
 
 ## 데모 스크린샷 후보
-1. Grafana 대시보드: 스파이크 전/후 p95 latency, consumer lag
-2. k6 결과: 오버셀 0건 + p95 < 800ms
-3. 대기열 화면(S2): 순번/예상시간 진행바
+1. **Grafana "Ticketing — Live (scale-out)"**: 파드 수 계단 상승 ↔ RPS 상승 ↔ p95 하락이 한 화면에
+2. **CPU / 파드 패널**: 스케일아웃 시 선이 늘고 각 선 높이가 내려가는 그림 (버그 수정 전후 대비도 가능)
+3. k6 요약: 오버셀 0건 + 수평 확장 곡선 표
+4. 대기열 화면: 순번/예상시간 진행바
 
-## 링크 (작성 후 채우기)
+## 링크
 - GitHub: `github.com/<you>/high-traffic-ticketing`
-- Figma: (figma/README.md에 링크)
+- Figma: <https://www.figma.com/design/Lu8ZeOb13XwyxS6RAc8K0P/ticketing> (열람 공개)
 - 데모 영상/배포 URL: (선택)

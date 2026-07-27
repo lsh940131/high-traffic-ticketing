@@ -16,12 +16,15 @@ feature/event-api ─┼─▶ develop ──(완성)──▶ master ──▶ 
                    ┘
 ```
 
+> 커밋 메시지는 `scope(type): 제목` 형식이 **강제**된다(commitlint + husky).
+> `feat: ...`처럼 scope가 없으면 훅에서 거부된다 — 양식은 [`../COMMIT_CONVENTION.md`](../COMMIT_CONVENTION.md).
+
 ## 일상 작업 (develop)
 ```bash
 git checkout develop
 # ... 작업 ...
 git add -A
-git commit -m "feat: ..."
+git commit -m "queue(feat): 대기열 진입 토큰 발급 API 추가"
 git push origin develop
 ```
 
