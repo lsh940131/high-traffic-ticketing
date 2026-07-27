@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { Agent } from 'node:http';
 import CircuitBreaker from 'opossum';
 
 /**
@@ -9,6 +10,7 @@ import CircuitBreaker from 'opossum';
  *  - 재시도: 네트워크 오류·타임아웃·502/503/504 같은 일시 오류만 백오프+지터로 제한 재시도.
  *  - 서킷브레이커: 특정 서비스가 계속 실패하면 회로를 열어 즉시 fallback → 연쇄 장애 차단.
  *    target(다운스트림 베이스 URL)별로 회로를 분리해, 죽은 서비스 하나만 열리게 한다.
+ *  - 커넥션 풀 회전: 아래 참고. 스케일아웃한 파드가 실제로 트래픽을 받게 한다.
  */
 
 // 튜너블 기본값 (필요하면 env로 승격 가능)
@@ -22,6 +24,27 @@ const CB_ROLLING_MS = 10_000; // 실패율 집계 롤링 윈도우
 
 const RETRYABLE_STATUS = new Set([502, 503, 504]);
 
+/**
+ * 커넥션 풀 회전 주기.
+ *
+ * 왜 필요한가 — k8s Service(ClusterIP)는 L4다. kube-proxy는 **TCP 커넥션을 맺는 순간 한 번**
+ * 백엔드 파드를 고르고, 그 커넥션의 모든 요청은 끝까지 같은 파드로 간다. HTTP keep-alive는
+ * 커넥션을 재사용하는 게 목적이고 Node 19+는 기본이 `keepAlive: true`다. 둘이 겹치면
+ * **다운스트림을 스케일아웃해도 새 파드는 트래픽을 못 받는다** — 새 커넥션이 생기지 않으니까.
+ * 실측: queue-service를 3→6으로 늘려도 기존 3개만 CPU 1.0을 태우고 신규 3개는 0.005였다.
+ * (커넥션을 다시 맺게 하자 6개로 고르게 퍼지며 처리량 1,461 → 2,055 rps, +41%)
+ *
+ * 그래서 커넥션에 수명을 준다. keep-alive의 이득(핸드셰이크 제거)은 유지하면서,
+ * 주기적으로 풀을 새로 맺어 그때마다 kube-proxy가 현재 파드 집합으로 재분배하게 한다.
+ * 트레이드오프: 재분배까지 최대 이 주기만큼 걸린다.
+ *
+ * 정석은 L7 로드밸런싱(서비스 메시·Envoy)으로 요청 단위 분배를 하는 것이고,
+ * 이건 의존성 없이 같은 문제를 덮는 실용적 대안이다.
+ */
+const AGENT_TTL_MS = Number(process.env.UPSTREAM_AGENT_TTL_MS ?? 30_000);
+/** 교체된 옛 에이전트가 진행 중 요청을 끝낼 유예. 이 뒤에 소켓을 닫는다. */
+const AGENT_DRAIN_MS = Number(process.env.UPSTREAM_AGENT_DRAIN_MS ?? 10_000);
+
 export interface UpstreamResult {
   status: number;
   data: unknown;
@@ -29,14 +52,48 @@ export interface UpstreamResult {
 }
 
 @Injectable()
-export class UpstreamService {
+export class UpstreamService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(UpstreamService.name);
   private readonly breakers = new Map<
     string,
     CircuitBreaker<[AxiosRequestConfig], UpstreamResult>
   >();
 
+  /** 현재 요청이 쓰는 에이전트. 회전 시 통째로 교체된다. */
+  private agent = UpstreamService.createAgent();
+  private rotateTimer?: NodeJS.Timeout;
+
   constructor(private readonly http: HttpService) {}
+
+  onModuleInit(): void {
+    this.rotateTimer = setInterval(() => this.rotateAgent(), AGENT_TTL_MS);
+    this.rotateTimer.unref(); // 이 타이머가 프로세스 종료를 막지 않게
+  }
+
+  onModuleDestroy(): void {
+    if (this.rotateTimer) clearInterval(this.rotateTimer);
+    this.agent.destroy();
+  }
+
+  private static createAgent(): Agent {
+    return new Agent({
+      keepAlive: true,
+      // 기본값 'lifo'는 최근 쓴 소켓을 먼저 재사용해 소수 소켓(=소수 파드)에 쏠린다.
+      // 'fifo'는 풀 전체를 돌려 쓰므로 백엔드 파드에도 고르게 퍼진다.
+      scheduling: 'fifo',
+    });
+  }
+
+  /**
+   * 새 에이전트로 교체하고, 옛 에이전트는 유예 뒤에 정리한다.
+   * `agent.destroy()`를 바로 부르면 **사용 중인 소켓까지 끊어** 진행 중 요청이 실패하므로,
+   * 신규 요청만 새 풀로 보내고 옛 풀은 자연히 비워지게 둔다.
+   */
+  private rotateAgent(): void {
+    const previous = this.agent;
+    this.agent = UpstreamService.createAgent();
+    setTimeout(() => previous.destroy(), AGENT_DRAIN_MS).unref();
+  }
 
   /** target별 서킷을 lazily 생성·캐시. */
   private breakerFor(target: string): CircuitBreaker<[AxiosRequestConfig], UpstreamResult> {
@@ -87,6 +144,9 @@ export class UpstreamService {
           ...cfg,
           timeout: TIMEOUT_MS,
           validateStatus: () => true,
+          // 전역 agent 대신 회전하는 풀을 쓴다(위 AGENT_TTL_MS 설명 참고).
+          // 다운스트림은 전부 클러스터 내부 http라 httpAgent만 지정한다.
+          httpAgent: this.agent,
         });
         if (RETRYABLE_STATUS.has(res.status)) {
           if (attempt < MAX_RETRIES) {
