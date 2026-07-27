@@ -31,7 +31,8 @@ export function mintAT(sub, email) {
 // 대상 공연 ID (setup에서 1회). -e CONCERT_INDEX=N 으로 공연 선택(테스트마다 독립 재고).
 export function firstConcertId() {
   const idx = Number(__ENV.CONCERT_INDEX || 0);
-  const res = http.get(`${BASE}/concerts`, { tags: { name: 'concerts' } });
+  // responseType: 스크립트가 discardResponseBodies를 켠 경우에도 이 응답만은 본문이 필요하다.
+  const res = http.get(`${BASE}/concerts`, { tags: { name: 'concerts' }, responseType: 'text' });
   return res.json().data[idx].id;
 }
 
