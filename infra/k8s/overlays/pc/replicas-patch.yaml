@@ -1,0 +1,16 @@
+# 베이스라인 replica. 여기서 시작해 부하를 걸어둔 채 gateway를 2→4→6으로 올리며 곡선을 뽑는다.
+#   kubectl -n ticketing scale deploy/gateway --replicas=4
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: gateway, namespace: ticketing }
+spec: { replicas: 2 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: queue-service, namespace: ticketing }
+spec: { replicas: 2 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: reservation-service, namespace: ticketing }
+spec: { replicas: 1 }

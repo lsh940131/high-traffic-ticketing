@@ -1,0 +1,39 @@
+# pc — PC 단일 노드(k3d) 클러스터. 수평 확장 곡선 · HPA 라이브 시연용.
+#
+# dev(노트북 클러스터) 대비 차이:
+#  - **레지스트리 없음**. 빌드도 클러스터도 같은 PC라 `k3d image import`로 이미지를 직접 넣는다.
+#    → `newName`(레지스트리 주소) 없이 태그만 `:pc`로 바꾼다.
+#  - 스케일 대상 3종의 requests를 500m으로 상향 → HPA 임계(70%=350m)가 의미 있게 동작.
+#  - gateway·front를 NodePort로 노출 → 노트북(k6·브라우저)에서 LAN으로 접근.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ticketing
+resources:
+  - ../../base
+patches:
+  - path: replicas-patch.yaml
+  - path: nodeport-patch.yaml
+  - path: scale-resources-patch.yaml
+  - path: image-pull-policy-patch.yaml
+images:
+  - { name: ticketing-gateway, newTag: pc }
+  - { name: ticketing-queue-service, newTag: pc }
+  - { name: ticketing-reservation-service, newTag: pc }
+  - { name: ticketing-payment-service, newTag: pc }
+  - { name: ticketing-user-service, newTag: pc }
+  - { name: ticketing-front, newTag: pc }
+configMapGenerator:
+  - name: back-config
+    literals:
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - DATABASE_URL=postgresql://ticket:ticket@postgres:5432/ticketing
+      - QUEUE_URL=http://queue-service:3101
+      - RESERVATION_URL=http://reservation-service:3102
+      - USER_URL=http://user-service:3104
+      - QUEUE_ACTIVE_CAPACITY=1000
+secretGenerator:
+  - name: back-secret
+    literals:
+      # k6가 AT를 직접 서명 발급하므로 부하 실행 시 JWT_SECRET을 이 값과 동일하게 넘겨야 한다.
+      - JWT_SECRET=dev-notebook

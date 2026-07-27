@@ -1,0 +1,50 @@
+# `k3d image import`로 넣은 로컬 이미지를 쓰므로 절대 레지스트리를 찾으러 가면 안 된다.
+# (base가 `:latest`인데 `:latest`는 기본 pullPolicy가 Always → ImagePullBackOff.
+#  이 overlay는 태그를 `:pc`로 바꾸므로 기본값도 IfNotPresent가 되지만, 사고 방지로 명시한다.)
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: gateway, namespace: ticketing }
+spec:
+  template:
+    spec:
+      containers: [{ name: gateway, imagePullPolicy: IfNotPresent }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: queue-service, namespace: ticketing }
+spec:
+  template:
+    spec:
+      containers: [{ name: queue-service, imagePullPolicy: IfNotPresent }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: reservation-service, namespace: ticketing }
+spec:
+  template:
+    spec:
+      containers: [{ name: reservation-service, imagePullPolicy: IfNotPresent }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: payment-service, namespace: ticketing }
+spec:
+  template:
+    spec:
+      containers: [{ name: payment-service, imagePullPolicy: IfNotPresent }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: user-service, namespace: ticketing }
+spec:
+  template:
+    spec:
+      containers: [{ name: user-service, imagePullPolicy: IfNotPresent }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: front, namespace: ticketing }
+spec:
+  template:
+    spec:
+      containers: [{ name: front, imagePullPolicy: IfNotPresent }]
