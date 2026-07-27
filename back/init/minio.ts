@@ -1,6 +1,12 @@
 import { readFileSync, readdirSync } from 'fs';
 import { join, extname } from 'path';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  HeadBucketCommand,
+  CreateBucketCommand,
+  PutBucketPolicyCommand,
+} from '@aws-sdk/client-s3';
 
 /**
  * 공연 이미지(포스터·상세)를 MinIO(S3 호환)에 업로드하고 공개 URL을 돌려준다.
@@ -30,7 +36,46 @@ const CONTENT_TYPE: Record<string, string> = {
   '.webp': 'image/webp',
 };
 
+/**
+ * 버킷 보장(멱등). 없으면 만들고 public read 정책을 건다.
+ * 스토리지가 emptyDir(휘발)이라 클러스터를 새로 만들 때마다 재시드하는데,
+ * 버킷 생성이 수동 단계로 남아 있으면 매번 같은 곳에서 막힌다.
+ */
+let ensured: Promise<void> | null = null;
+function ensureBucket(): Promise<void> {
+  ensured ??= (async () => {
+    try {
+      await s3.send(new HeadBucketCommand({ Bucket: BUCKET }));
+      return; // 이미 있음
+    } catch (e: unknown) {
+      const status = (e as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+      if (status !== 404) throw e; // 권한·연결 오류는 그대로 노출
+    }
+    await s3.send(new CreateBucketCommand({ Bucket: BUCKET }));
+    // 포스터 URL을 DB에 그대로 저장해 브라우저가 직접 받으므로 익명 읽기 허용.
+    await s3.send(
+      new PutBucketPolicyCommand({
+        Bucket: BUCKET,
+        Policy: JSON.stringify({
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Effect: 'Allow',
+              Principal: { AWS: ['*'] },
+              Action: ['s3:GetObject'],
+              Resource: [`arn:aws:s3:::${BUCKET}/*`],
+            },
+          ],
+        }),
+      }),
+    );
+    console.log(`[minio] 버킷 생성 + public read 정책 적용: ${BUCKET}`);
+  })();
+  return ensured;
+}
+
 async function putObject(key: string, dir: string, file: string): Promise<string> {
+  await ensureBucket();
   const ext = extname(file).toLowerCase();
   await s3.send(
     new PutObjectCommand({
