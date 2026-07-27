@@ -1,0 +1,70 @@
+# HorizontalPodAutoscaler — CPU 기반 자동 증식.
+#
+# 앱 base/overlay와 분리된 **애드온**이다. 이유: 수동 스케일 시연(`kubectl scale`) 중에
+# HPA가 붙어 있으면 원하는 replica로 고정이 안 되고 HPA가 되돌려버린다.
+# 시연 순서상 "수동 2→4→6으로 곡선 뽑기" → "HPA 걸고 자동 증식 보기" 이므로 나중에 얹는다.
+#
+#   kubectl apply -k infra/k8s/hpa      # 자동 스케일 ON
+#   kubectl delete -k infra/k8s/hpa     # 다시 수동 스케일로
+#
+# 전제: metrics-server (k3s/k3d 내장, Docker Desktop k8s는 별도 설치 필요) + 대상 파드에 resources.requests.
+# averageUtilization은 **limits가 아니라 requests 대비**다. pc overlay가 requests를 500m으로
+# 올려두므로 70% = 파드당 350m — 이 지점에서 증식이 시작된다.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: gateway, namespace: ticketing }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: gateway }
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+  behavior:
+    # 라이브 시연용으로 기본값보다 공격적으로: 올릴 땐 즉시(15s마다 최대 2파드),
+    # 내릴 땐 60s 안정화(부하 출렁임에 파드가 요동치지 않게).
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies: [{ type: Pods, value: 2, periodSeconds: 15 }]
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies: [{ type: Pods, value: 1, periodSeconds: 30 }]
+---
+# 대기열은 status 폴링 트래픽이 많아 가장 먼저 포화된다.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: queue-service, namespace: ticketing }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: queue-service }
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies: [{ type: Pods, value: 2, periodSeconds: 15 }]
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies: [{ type: Pods, value: 1, periodSeconds: 30 }]
+---
+# gateway를 늘리면 병목이 이쪽으로 옮겨온다(예매 확정 경로).
+# postgres 커넥션 풀이 뒤에 있으므로 max를 보수적으로.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: reservation-service, namespace: ticketing }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: reservation-service }
+  minReplicas: 1
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies: [{ type: Pods, value: 2, periodSeconds: 15 }]
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies: [{ type: Pods, value: 1, periodSeconds: 30 }]
